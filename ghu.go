@@ -1,4 +1,4 @@
-package cmd
+package ghu
 
 import (
 	"github.com/sirupsen/logrus"
@@ -8,10 +8,10 @@ import (
 var username string
 
 func init() {
-	ghuRoot.Flags().StringVarP(&username, "username", "u", "", "username to use")
+	rootCmd.Flags().StringVarP(&username, "username", "u", "", "username to use")
 }
 
-var ghuRoot = &cobra.Command{
+var rootCmd = &cobra.Command{
 	Use:   "",
 	Short: "GitHub User",
 	Long:  `GitHub User`,
@@ -22,5 +22,5 @@ var ghuRoot = &cobra.Command{
 
 // Execute will trigger root command.
 func Execute() error {
-	return ghuRoot.Execute()
+	return rootCmd.Execute()
 }
