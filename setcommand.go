@@ -17,6 +17,8 @@ var setCmd = &cobra.Command{
 	Short: "Set value",
 	Long:  "Set value",
 	Run: func(cmd *cobra.Command, args []string) {
-		logrus.Infof("setting username: %s, ssh key: %s", username, sshKey)
+		if err := ProcessSet(username, sshKey); err != nil {
+			logrus.Error(err)
+		}
 	},
 }

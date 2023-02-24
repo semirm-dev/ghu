@@ -2,49 +2,57 @@ package ghu
 
 import (
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
+	"strings"
 )
 
-const (
-	version = "0.0.1"
-)
+func ProcessSet(username, sshKey string) error {
+	if strings.TrimSpace(username) == "" {
+		if err := setUsername(username); err != nil {
+			return err
+		}
+	}
 
-var (
-	username string
-	sshKey   string
-	path     string
-)
+	if strings.TrimSpace(sshKey) == "" {
+		if err := setSSHKey(sshKey); err != nil {
+			return err
+		}
+	}
 
-func init() {
-	rootCmd.AddCommand(versionCmd)
-	rootCmd.AddCommand(showCmd)
+	return nil
 }
 
-var rootCmd = &cobra.Command{
-	Use:   "",
-	Short: "GitHub User",
-	Long:  "GitHub User",
+func ProcessDelete(username, sshKey string) error {
+	if strings.TrimSpace(username) == "" {
+		if err := deleteUsername(username); err != nil {
+			return err
+		}
+	}
+
+	if strings.TrimSpace(sshKey) == "" {
+		if err := deleteSSHKey(sshKey); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Display ghu version",
-	Long:  "Display ghu version",
-	Run: func(cmd *cobra.Command, args []string) {
-		logrus.Infof("version: %s", version)
-	},
+func setUsername(username string) error {
+	logrus.Infof("setting username: %s", username)
+	return nil
 }
 
-var showCmd = &cobra.Command{
-	Use:   "show",
-	Short: "Display ghu active config",
-	Long:  "Display ghu active config",
-	Run: func(cmd *cobra.Command, args []string) {
-		logrus.Infof("active configuration...")
-	},
+func setSSHKey(sshKey string) error {
+	logrus.Infof("setting ssh key: %s", sshKey)
+	return nil
 }
 
-// Execute will trigger root command.
-func Execute() error {
-	return rootCmd.Execute()
+func deleteUsername(username string) error {
+	logrus.Infof("deleting username: %s", username)
+	return nil
+}
+
+func deleteSSHKey(sshKey string) error {
+	logrus.Infof("deleting ssh key: %s", sshKey)
+	return nil
 }

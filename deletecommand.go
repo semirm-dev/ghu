@@ -17,6 +17,8 @@ var deleteCmd = &cobra.Command{
 	Short: "Delete value",
 	Long:  "Delete value",
 	Run: func(cmd *cobra.Command, args []string) {
-		logrus.Infof("deleting username: %s, ssh key: %s", username, sshKey)
+		if err := ProcessDelete(username, sshKey); err != nil {
+			logrus.Error(err)
+		}
 	},
 }
