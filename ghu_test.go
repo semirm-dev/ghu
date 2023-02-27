@@ -59,7 +59,7 @@ func TestReplaceSSHKey_MultipleHosts(t *testing.T) {
 Host github.com/other-host
   AddKeysToAgent yes
   UseKeychain yes
-  IdentityFile ~/.ssh/jokr`
+  IdentityFile ~/.ssh/other`
 
 	expectedConfig := `Host github.com
   AddKeysToAgent yes
@@ -68,7 +68,7 @@ Host github.com/other-host
 Host github.com/other-host
   AddKeysToAgent yes
   UseKeychain yes
-  IdentityFile ~/.ssh/jokr
+  IdentityFile ~/.ssh/other
 `
 	sshConf := bytes.NewBuffer([]byte(currentConfig))
 
