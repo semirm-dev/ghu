@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestProcessSet_GitHubConfig(t *testing.T) {
+func TestReplaceUsername(t *testing.T) {
 	currentConfig := `[user]
 	name = invaliduser
 	[url "git@github.com:"]
@@ -28,12 +28,12 @@ func TestProcessSet_GitHubConfig(t *testing.T) {
 `
 	ghConf := bytes.NewBuffer([]byte(currentConfig))
 
-	replacedConfig, _, err := ghu.Set("user-1", "", ghConf, nil)
+	replacedConfig, err := ghu.ReplaceUsername("user-1", ghConf)
 	assert.NoError(t, err)
 	assert.Equal(t, expectedConfig, replacedConfig)
 }
 
-func TestProcessSet_SSHConfig(t *testing.T) {
+func TestReplaceSSHKey(t *testing.T) {
 	currentConfig := `Host github.com
   AddKeysToAgent yes
   UseKeychain yes
@@ -46,7 +46,7 @@ func TestProcessSet_SSHConfig(t *testing.T) {
 `
 	sshConf := bytes.NewBuffer([]byte(currentConfig))
 
-	_, replacedConfig, err := ghu.Set("", "private", nil, sshConf)
+	replacedConfig, err := ghu.ReplaceSSHKey("private", sshConf)
 	assert.NoError(t, err)
 	assert.Equal(t, expectedConfig, replacedConfig)
 }

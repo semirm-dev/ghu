@@ -5,10 +5,12 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
+	"strings"
 )
 
 const (
 	gitConfigPath = ".git/config"
+	sshConfPath   = ""
 )
 
 func init() {
@@ -23,20 +25,58 @@ var setCmd = &cobra.Command{
 	Short: "Set value",
 	Long:  "Set value",
 	Run: func(cmd *cobra.Command, args []string) {
-		conf, err := os.ReadFile(gitConfigPath)
-		if err != nil {
-			logrus.Fatal(err)
+		uName := strings.TrimSpace(username)
+		if uName != "" {
+			if err := replaceUsername(gitConfigPath, uName); err != nil {
+				logrus.Error(err)
+			}
 		}
 
-		confBuf := bytes.NewBuffer(conf)
-
-		replacedConf, _, err := Set(username, "", confBuf, nil)
-		if err != nil {
-			logrus.Fatal(err)
-		}
-
-		if err := os.WriteFile(gitConfigPath, []byte(replacedConf), os.ModePerm); err != nil {
-			logrus.Fatal(err)
+		key := strings.TrimSpace(sshKey)
+		if key != "" {
+			if err := replaceSSHKey(sshConfPath, key); err != nil {
+				logrus.Error(err)
+			}
 		}
 	},
+}
+
+func replaceUsername(confPath, newUsername string) error {
+	conf, err := os.ReadFile(confPath)
+	if err != nil {
+		return err
+	}
+
+	confBuf := bytes.NewBuffer(conf)
+
+	replacedConf, err := ReplaceUsername(newUsername, confBuf)
+	if err != nil {
+		return err
+	}
+
+	if err := os.WriteFile(confPath, []byte(replacedConf), os.ModePerm); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func replaceSSHKey(confPath, newKey string) error {
+	conf, err := os.ReadFile(confPath)
+	if err != nil {
+		return err
+	}
+
+	confBuf := bytes.NewBuffer(conf)
+
+	replacedConf, err := ReplaceUsername(newKey, confBuf)
+	if err != nil {
+		return err
+	}
+
+	if err := os.WriteFile(confPath, []byte(replacedConf), os.ModePerm); err != nil {
+		return err
+	}
+
+	return nil
 }

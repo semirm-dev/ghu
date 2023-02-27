@@ -7,21 +7,8 @@ import (
 	"strings"
 )
 
-func Set(username, sshKey string, ghConf io.Reader, sshConf io.Reader) (string, string, error) {
-	var gh string
-	if strings.TrimSpace(username) != "" {
-		gh = replaceUsername(username, ghConf)
-	}
-
-	var ssh string
-	if strings.TrimSpace(sshKey) != "" {
-		ssh = replaceSSHKey(sshKey, sshConf)
-	}
-
-	return gh, ssh, nil
-}
-
-func replaceUsername(username string, ghConf io.Reader) string {
+// ReplaceUsername replaces an existing GitHub username with new one.
+func ReplaceUsername(username string, ghConf io.Reader) (string, error) {
 	var conf string
 
 	scanner := bufio.NewScanner(ghConf)
@@ -40,10 +27,11 @@ func replaceUsername(username string, ghConf io.Reader) string {
 		conf += lineToWrite
 	}
 
-	return conf
+	return conf, nil
 }
 
-func replaceSSHKey(sshKey string, sshConf io.Reader) string {
+// ReplaceSSHKey replaces an existing GitHub ssh key with new one.
+func ReplaceSSHKey(sshKey string, sshConf io.Reader) (string, error) {
 	var conf string
 
 	scanner := bufio.NewScanner(sshConf)
@@ -62,5 +50,5 @@ func replaceSSHKey(sshKey string, sshConf io.Reader) string {
 		conf += lineToWrite
 	}
 
-	return conf
+	return conf, nil
 }
