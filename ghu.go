@@ -8,33 +8,20 @@ import (
 )
 
 // ReplaceUsername replaces an existing GitHub username with new one.
-func ReplaceUsername(username string, ghConf io.Reader) (string, error) {
-	var conf string
-
-	scanner := bufio.NewScanner(ghConf)
-	for scanner.Scan() {
-		line := scanner.Text()
-		if line == "" {
-			continue
-		}
-
-		lineToWrite := line + "\n"
-
-		if strings.Contains(line, "name = ") {
-			lineToWrite = fmt.Sprintf("\tname = %v\n", username)
-		}
-
-		conf += lineToWrite
-	}
-
-	return conf, nil
+func ReplaceUsername(conf io.Reader, username string) (string, error) {
+	return replace(conf, "\t", "name = ", username)
 }
 
 // ReplaceSSHKey replaces an existing GitHub ssh key with new one.
-func ReplaceSSHKey(sshKey string, sshConf io.Reader) (string, error) {
-	var conf string
+func ReplaceSSHKey(conf io.Reader, sshKey string) (string, error) {
+	return replace(conf, "  ", "IdentityFile ~/.ssh/", sshKey)
+}
 
-	scanner := bufio.NewScanner(sshConf)
+// replace value in given conf.
+func replace(conf io.Reader, lineIndent, pattern, value string) (string, error) {
+	var replaced string
+
+	scanner := bufio.NewScanner(conf)
 	for scanner.Scan() {
 		line := scanner.Text()
 		if line == "" {
@@ -43,12 +30,12 @@ func ReplaceSSHKey(sshKey string, sshConf io.Reader) (string, error) {
 
 		lineToWrite := line + "\n"
 
-		if strings.Contains(line, "IdentityFile ~/.ssh/") {
-			lineToWrite = fmt.Sprintf("  IdentityFile ~/.ssh/%v\n", sshKey)
+		if strings.Contains(line, pattern) {
+			lineToWrite = fmt.Sprintf("%v%v%v\n", lineIndent, pattern, value)
 		}
 
-		conf += lineToWrite
+		replaced += lineToWrite
 	}
 
-	return conf, nil
+	return replaced, nil
 }

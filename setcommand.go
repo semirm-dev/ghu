@@ -28,25 +28,22 @@ var setCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		uName := strings.TrimSpace(username)
 		if uName != "" {
-			if err := replace(gitConfigPath, uName, ReplaceUsername); err != nil {
+			if err := replaceFunc(gitConfigPath, uName, ReplaceUsername); err != nil {
 				logrus.Error(err)
 			}
 		}
 
 		key := strings.TrimSpace(sshKey)
 		if key != "" {
-			if err := replace(sshConfPath, key, ReplaceSSHKey); err != nil {
+			if err := replaceFunc(sshConfPath, key, ReplaceSSHKey); err != nil {
 				logrus.Error(err)
 			}
 		}
 	},
 }
 
-// replacerFunc will replace value in given conf
-type replacerFunc func(value string, conf io.Reader) (string, error)
-
-// replace an existing value from the confPath with the new value using given replacerFunc
-func replace(confPath, value string, replacer replacerFunc) error {
+// replaceFunc will replace an existing value from the confPath with the new value using given replacer
+func replaceFunc(confPath, value string, replacer func(conf io.Reader, value string) (string, error)) error {
 	conf, err := os.ReadFile(confPath)
 	if err != nil {
 		return err
@@ -54,7 +51,7 @@ func replace(confPath, value string, replacer replacerFunc) error {
 
 	confBuf := bytes.NewBuffer(conf)
 
-	replacedConf, err := replacer(value, confBuf)
+	replacedConf, err := replacer(confBuf, value)
 	if err != nil {
 		return err
 	}

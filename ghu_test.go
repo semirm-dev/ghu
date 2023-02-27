@@ -28,7 +28,7 @@ func TestReplaceUsername(t *testing.T) {
 `
 	ghConf := bytes.NewBuffer([]byte(currentConfig))
 
-	replacedConfig, err := ghu.ReplaceUsername("user-1", ghConf)
+	replacedConfig, err := ghu.ReplaceUsername(ghConf, "user-1")
 	assert.NoError(t, err)
 	assert.Equal(t, expectedConfig, replacedConfig)
 }
@@ -46,7 +46,7 @@ func TestReplaceSSHKey(t *testing.T) {
 `
 	sshConf := bytes.NewBuffer([]byte(currentConfig))
 
-	replacedConfig, err := ghu.ReplaceSSHKey("private", sshConf)
+	replacedConfig, err := ghu.ReplaceSSHKey(sshConf, "private")
 	assert.NoError(t, err)
 	assert.Equal(t, expectedConfig, replacedConfig)
 }
