@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -44,6 +45,10 @@ var setCmd = &cobra.Command{
 			if err := replaceFunc(filepath.Join(home, sshConfPath), key, ReplaceSSHKey); err != nil {
 				logrus.Error(err)
 			}
+
+			if err := refreshSSHAgent(); err != nil {
+				logrus.Error(err)
+			}
 		}
 	},
 }
@@ -67,4 +72,9 @@ func replaceFunc(confPath, value string, replacer func(conf io.Reader, value str
 	}
 
 	return nil
+}
+
+func refreshSSHAgent() error {
+	cmd := exec.Command("bash", "-c", "eval \"$(ssh-agent -s)\"")
+	return cmd.Run()
 }
