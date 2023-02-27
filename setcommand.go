@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"io"
 	"os"
 	"strings"
 )
@@ -27,21 +28,25 @@ var setCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		uName := strings.TrimSpace(username)
 		if uName != "" {
-			if err := replaceUsername(gitConfigPath, uName); err != nil {
+			if err := replace(gitConfigPath, uName, ReplaceUsername); err != nil {
 				logrus.Error(err)
 			}
 		}
 
 		key := strings.TrimSpace(sshKey)
 		if key != "" {
-			if err := replaceSSHKey(sshConfPath, key); err != nil {
+			if err := replace(sshConfPath, key, ReplaceSSHKey); err != nil {
 				logrus.Error(err)
 			}
 		}
 	},
 }
 
-func replaceUsername(confPath, newUsername string) error {
+// replacerFunc will replace value in given conf
+type replacerFunc func(value string, conf io.Reader) (string, error)
+
+// replace an existing value from the confPath with the new value using given replacerFunc
+func replace(confPath, value string, replacer replacerFunc) error {
 	conf, err := os.ReadFile(confPath)
 	if err != nil {
 		return err
@@ -49,27 +54,7 @@ func replaceUsername(confPath, newUsername string) error {
 
 	confBuf := bytes.NewBuffer(conf)
 
-	replacedConf, err := ReplaceUsername(newUsername, confBuf)
-	if err != nil {
-		return err
-	}
-
-	if err := os.WriteFile(confPath, []byte(replacedConf), os.ModePerm); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func replaceSSHKey(confPath, newKey string) error {
-	conf, err := os.ReadFile(confPath)
-	if err != nil {
-		return err
-	}
-
-	confBuf := bytes.NewBuffer(conf)
-
-	replacedConf, err := ReplaceUsername(newKey, confBuf)
+	replacedConf, err := replacer(value, confBuf)
 	if err != nil {
 		return err
 	}

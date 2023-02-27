@@ -43,7 +43,7 @@ func ReplaceSSHKey(sshKey string, sshConf io.Reader) (string, error) {
 
 		lineToWrite := line + "\n"
 
-		if strings.Contains(line, "IdentityFile ~/.ssh") {
+		if strings.Contains(line, "IdentityFile ~/.ssh/") {
 			lineToWrite = fmt.Sprintf("  IdentityFile ~/.ssh/%v\n", sshKey)
 		}
 
