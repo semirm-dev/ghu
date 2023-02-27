@@ -8,20 +8,21 @@ import (
 )
 
 // ReplaceUsername replaces an existing GitHub username with new one.
-func ReplaceUsername(conf io.Reader, username string) (string, error) {
-	return replace(conf, "\t", "name = ", username)
+func ReplaceUsername(conf io.Reader, username, host string) (string, error) {
+	return replace(conf, "\t", "name = ", username, host)
 }
 
 // ReplaceSSHKey replaces an existing GitHub ssh key with new one.
-func ReplaceSSHKey(conf io.Reader, sshKey string) (string, error) {
-	return replace(conf, "  ", "IdentityFile ~/.ssh/", sshKey)
+func ReplaceSSHKey(conf io.Reader, sshKey, host string) (string, error) {
+	return replace(conf, "  ", "IdentityFile ~/.ssh/", sshKey, host)
 }
 
 // replace value in given conf.
-func replace(conf io.Reader, lineIndent, pattern, value string) (string, error) {
+func replace(conf io.Reader, lineIndent, pattern, value, host string) (string, error) {
 	var replaced string
 
 	scanner := bufio.NewScanner(conf)
+	var previousHost string
 	for scanner.Scan() {
 		line := scanner.Text()
 		if line == "" {
@@ -30,7 +31,11 @@ func replace(conf io.Reader, lineIndent, pattern, value string) (string, error) 
 
 		lineToWrite := line + "\n"
 
-		if strings.Contains(line, pattern) {
+		if strings.Contains(line, "Host ") {
+			previousHost = line
+		}
+
+		if strings.Contains(line, pattern) && (host == "" || host != "" && host == previousHost) {
 			lineToWrite = fmt.Sprintf("%v%v%v\n", lineIndent, pattern, value)
 		}
 

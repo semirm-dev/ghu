@@ -20,6 +20,7 @@ func init() {
 	// set
 	setCmd.PersistentFlags().StringVarP(&username, "username", "u", "", "username to use")
 	setCmd.PersistentFlags().StringVarP(&sshKey, "key", "k", "", "ssh key to use")
+	setCmd.PersistentFlags().StringVarP(&sshHost, "host", "h", "", "ssh host")
 	rootCmd.AddCommand(setCmd)
 }
 
@@ -30,7 +31,7 @@ var setCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		uName := strings.TrimSpace(username)
 		if uName != "" {
-			if err := replaceFunc(gitConfigPath, uName, ReplaceUsername); err != nil {
+			if err := replaceFunc(gitConfigPath, uName, "", ReplaceUsername); err != nil {
 				logrus.Error(err)
 			}
 		}
@@ -42,7 +43,7 @@ var setCmd = &cobra.Command{
 				logrus.Fatal(err)
 			}
 
-			if err := replaceFunc(filepath.Join(home, sshConfPath), key, ReplaceSSHKey); err != nil {
+			if err := replaceFunc(filepath.Join(home, sshConfPath), key, sshHost, ReplaceSSHKey); err != nil {
 				logrus.Error(err)
 			}
 
@@ -54,7 +55,7 @@ var setCmd = &cobra.Command{
 }
 
 // replaceFunc will replace an existing value from the confPath with the new value using given replacer
-func replaceFunc(confPath, value string, replacer func(conf io.Reader, value string) (string, error)) error {
+func replaceFunc(confPath, value, host string, replacer func(conf io.Reader, value, host string) (string, error)) error {
 	conf, err := os.ReadFile(confPath)
 	if err != nil {
 		return err
@@ -62,7 +63,7 @@ func replaceFunc(confPath, value string, replacer func(conf io.Reader, value str
 
 	confBuf := bytes.NewBuffer(conf)
 
-	replacedConf, err := replacer(confBuf, value)
+	replacedConf, err := replacer(confBuf, value, host)
 	if err != nil {
 		return err
 	}

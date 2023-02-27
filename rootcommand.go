@@ -12,6 +12,7 @@ const (
 var (
 	username string
 	sshKey   string
+	sshHost  string
 )
 
 func init() {

@@ -28,7 +28,7 @@ func TestReplaceUsername(t *testing.T) {
 `
 	ghConf := bytes.NewBuffer([]byte(currentConfig))
 
-	replacedConfig, err := ghu.ReplaceUsername(ghConf, "user-1")
+	replacedConfig, err := ghu.ReplaceUsername(ghConf, "user-1", "")
 	assert.NoError(t, err)
 	assert.Equal(t, expectedConfig, replacedConfig)
 }
@@ -46,7 +46,33 @@ func TestReplaceSSHKey(t *testing.T) {
 `
 	sshConf := bytes.NewBuffer([]byte(currentConfig))
 
-	replacedConfig, err := ghu.ReplaceSSHKey(sshConf, "private")
+	replacedConfig, err := ghu.ReplaceSSHKey(sshConf, "private", "")
+	assert.NoError(t, err)
+	assert.Equal(t, expectedConfig, replacedConfig)
+}
+
+func TestReplaceSSHKey_MultipleHosts(t *testing.T) {
+	currentConfig := `Host github.com
+  AddKeysToAgent yes
+  UseKeychain yes
+  IdentityFile ~/.ssh/private_git
+Host github.com/JOKR-Services
+  AddKeysToAgent yes
+  UseKeychain yes
+  IdentityFile ~/.ssh/jokr`
+
+	expectedConfig := `Host github.com
+  AddKeysToAgent yes
+  UseKeychain yes
+  IdentityFile ~/.ssh/private
+Host github.com/JOKR-Services
+  AddKeysToAgent yes
+  UseKeychain yes
+  IdentityFile ~/.ssh/jokr
+`
+	sshConf := bytes.NewBuffer([]byte(currentConfig))
+
+	replacedConfig, err := ghu.ReplaceSSHKey(sshConf, "private", "Host github.com")
 	assert.NoError(t, err)
 	assert.Equal(t, expectedConfig, replacedConfig)
 }
