@@ -32,10 +32,10 @@ func replace(conf io.Reader, lineIndent, pattern, value, host string) (string, e
 		lineToWrite := line + "\n"
 
 		if strings.Contains(line, "Host ") {
-			previousHost = line
+			previousHost = strings.TrimPrefix(line, "Host ")
 		}
 
-		if strings.Contains(line, pattern) && (host == "" || host != "" && "Host "+host == previousHost) {
+		if strings.Contains(line, pattern) && (host == "" || host != "" && host == previousHost) {
 			lineToWrite = fmt.Sprintf("%v%v%v\n", lineIndent, pattern, value)
 		}
 
