@@ -6,12 +6,13 @@ import (
 	"github.com/spf13/cobra"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
 const (
 	gitConfigPath = ".git/config"
-	sshConfPath   = ""
+	sshConfPath   = ".ssh/config"
 )
 
 func init() {
@@ -35,7 +36,12 @@ var setCmd = &cobra.Command{
 
 		key := strings.TrimSpace(sshKey)
 		if key != "" {
-			if err := replaceFunc(sshConfPath, key, ReplaceSSHKey); err != nil {
+			home, err := os.UserHomeDir()
+			if err != nil {
+				logrus.Fatal(err)
+			}
+
+			if err := replaceFunc(filepath.Join(home, sshConfPath), key, ReplaceSSHKey); err != nil {
 				logrus.Error(err)
 			}
 		}
