@@ -12,12 +12,10 @@ const (
 var (
 	username string
 	sshKey   string
-	path     string
 )
 
 func init() {
 	rootCmd.AddCommand(versionCmd)
-	rootCmd.AddCommand(showCmd)
 }
 
 var rootCmd = &cobra.Command{
@@ -35,15 +33,6 @@ var versionCmd = &cobra.Command{
 	},
 }
 
-var showCmd = &cobra.Command{
-	Use:   "show",
-	Short: "Display ghu active config",
-	Long:  "Display ghu active config",
-	Run: func(cmd *cobra.Command, args []string) {
-		showConfig()
-	},
-}
-
 // Execute will trigger root command.
 func Execute() error {
 	return rootCmd.Execute()
@@ -51,8 +40,4 @@ func Execute() error {
 
 func displayVersion() {
 	logrus.Infof("version: %s", version)
-}
-
-func showConfig() {
-	logrus.Infof("active configuration...")
 }

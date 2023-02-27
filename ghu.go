@@ -1,58 +1,66 @@
 package ghu
 
 import (
-	"github.com/sirupsen/logrus"
+	"bufio"
+	"fmt"
+	"io"
 	"strings"
 )
 
-func ProcessSet(username, sshKey string) error {
-	if strings.TrimSpace(username) == "" {
-		if err := setUsername(username); err != nil {
-			return err
-		}
+func Set(username, sshKey string, ghConf io.Reader, sshConf io.Reader) (string, string, error) {
+	var gh string
+	if strings.TrimSpace(username) != "" {
+		gh = replaceUsername(username, ghConf)
 	}
 
-	if strings.TrimSpace(sshKey) == "" {
-		if err := setSSHKey(sshKey); err != nil {
-			return err
-		}
+	var ssh string
+	if strings.TrimSpace(sshKey) != "" {
+		ssh = replaceSSHKey(sshKey, sshConf)
 	}
 
-	return nil
+	return gh, ssh, nil
 }
 
-func ProcessDelete(username, sshKey string) error {
-	if strings.TrimSpace(username) == "" {
-		if err := deleteUsername(username); err != nil {
-			return err
+func replaceUsername(username string, ghConf io.Reader) string {
+	var conf string
+
+	scanner := bufio.NewScanner(ghConf)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line == "" {
+			continue
 		}
+
+		lineToWrite := line + "\n"
+
+		if strings.Contains(line, "name = ") {
+			lineToWrite = fmt.Sprintf("\tname = %v\n", username)
+		}
+
+		conf += lineToWrite
 	}
 
-	if strings.TrimSpace(sshKey) == "" {
-		if err := deleteSSHKey(sshKey); err != nil {
-			return err
+	return conf
+}
+
+func replaceSSHKey(sshKey string, sshConf io.Reader) string {
+	var conf string
+
+	scanner := bufio.NewScanner(sshConf)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line == "" {
+			continue
 		}
+
+		lineToWrite := line + "\n"
+
+		if strings.Contains(line, "IdentityFile ~/.ssh") {
+			lineToWrite = fmt.Sprintf("  IdentityFile ~/.ssh/%v\n", sshKey)
+		}
+
+		conf += lineToWrite
 	}
 
-	return nil
-}
-
-func setUsername(username string) error {
-	logrus.Infof("setting username: %s", username)
-	return nil
-}
-
-func setSSHKey(sshKey string) error {
-	logrus.Infof("setting ssh key: %s", sshKey)
-	return nil
-}
-
-func deleteUsername(username string) error {
-	logrus.Infof("deleting username: %s", username)
-	return nil
-}
-
-func deleteSSHKey(sshKey string) error {
-	logrus.Infof("deleting ssh key: %s", sshKey)
-	return nil
+	return conf
 }

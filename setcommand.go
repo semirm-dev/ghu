@@ -1,7 +1,6 @@
 package ghu
 
 import (
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -17,8 +16,6 @@ var setCmd = &cobra.Command{
 	Short: "Set value",
 	Long:  "Set value",
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := ProcessSet(username, sshKey); err != nil {
-			logrus.Error(err)
-		}
+
 	},
 }
