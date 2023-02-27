@@ -35,7 +35,7 @@ func replace(conf io.Reader, lineIndent, pattern, value, host string) (string, e
 			previousHost = line
 		}
 
-		if strings.Contains(line, pattern) && (host == "" || host != "" && host == previousHost) {
+		if strings.Contains(line, pattern) && (host == "" || host != "" && "Host "+host == previousHost) {
 			lineToWrite = fmt.Sprintf("%v%v%v\n", lineIndent, pattern, value)
 		}
 

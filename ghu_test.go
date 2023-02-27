@@ -72,7 +72,7 @@ Host github.com/JOKR-Services
 `
 	sshConf := bytes.NewBuffer([]byte(currentConfig))
 
-	replacedConfig, err := ghu.ReplaceSSHKey(sshConf, "private", "Host github.com")
+	replacedConfig, err := ghu.ReplaceSSHKey(sshConf, "private", "github.com")
 	assert.NoError(t, err)
 	assert.Equal(t, expectedConfig, replacedConfig)
 }

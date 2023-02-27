@@ -20,7 +20,7 @@ func init() {
 	// set
 	setCmd.PersistentFlags().StringVarP(&username, "username", "u", "", "username to use")
 	setCmd.PersistentFlags().StringVarP(&sshKey, "key", "k", "", "ssh key to use")
-	setCmd.PersistentFlags().StringVarP(&sshHost, "host", "h", "", "ssh host")
+	setCmd.PersistentFlags().StringVarP(&sshHost, "host", "", "", "ssh host")
 	rootCmd.AddCommand(setCmd)
 }
 
