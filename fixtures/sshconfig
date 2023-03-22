@@ -1,0 +1,9 @@
+Host github.com
+  AddKeysToAgent yes
+  UseKeychain yes
+  IdentityFile ~/.ssh/private_git
+
+Host github.com/Private-Repo
+  AddKeysToAgent yes
+  UseKeychain yes
+  IdentityFile ~/.ssh/private_repo

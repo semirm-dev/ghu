@@ -18,8 +18,8 @@ const (
 
 func init() {
 	// set
-	setCmd.PersistentFlags().StringVarP(&username, "username", "u", "", "username to use")
-	setCmd.PersistentFlags().StringVarP(&sshKey, "key", "k", "", "ssh key to use")
+	setCmd.PersistentFlags().StringVarP(&usernameToSet, "username", "u", "", "username to use")
+	setCmd.PersistentFlags().StringVarP(&sshKeyToSet, "key", "k", "", "ssh key to use")
 	setCmd.PersistentFlags().StringVarP(&sshHost, "host", "", "", "ssh host")
 	rootCmd.AddCommand(setCmd)
 }
@@ -29,21 +29,14 @@ var setCmd = &cobra.Command{
 	Short: "Set value",
 	Long:  "Set value",
 	Run: func(cmd *cobra.Command, args []string) {
-		uName := strings.TrimSpace(username)
-		if uName != "" {
-			if err := replaceFunc(gitConfigPath, uName, "", ReplaceUsername); err != nil {
+		if uName := strings.TrimSpace(usernameToSet); uName != "" {
+			if err := replaceUsername(uName, ReplaceUsername); err != nil {
 				logrus.Error(err)
 			}
 		}
 
-		key := strings.TrimSpace(sshKey)
-		if key != "" {
-			home, err := os.UserHomeDir()
-			if err != nil {
-				logrus.Fatal(err)
-			}
-
-			if err := replaceFunc(filepath.Join(home, sshConfPath), key, sshHost, ReplaceSSHKey); err != nil {
+		if key := strings.TrimSpace(sshKeyToSet); key != "" {
+			if err := replaceSsh(key, sshHost, ReplaceSSHKey); err != nil {
 				logrus.Error(err)
 			}
 
@@ -54,8 +47,34 @@ var setCmd = &cobra.Command{
 	},
 }
 
-// replaceFunc will replace an existing value from the confPath with the new value using given replacer
-func replaceFunc(confPath, value, host string, replacer func(conf io.Reader, value, host string) (string, error)) error {
+func replaceUsername(value string, replacer func(conf io.Reader, value string) (string, error)) error {
+	conf, err := os.ReadFile(gitConfigPath)
+	if err != nil {
+		return err
+	}
+
+	confBuf := bytes.NewBuffer(conf)
+
+	replacedConf, err := replacer(confBuf, value)
+	if err != nil {
+		return err
+	}
+
+	if err := os.WriteFile(gitConfigPath, []byte(replacedConf), os.ModePerm); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func replaceSsh(value, host string, replacer func(conf io.Reader, value, host string) (string, error)) error {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+
+	confPath := filepath.Join(home, sshConfPath)
+
 	conf, err := os.ReadFile(confPath)
 	if err != nil {
 		return err

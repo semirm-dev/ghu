@@ -10,9 +10,9 @@ const (
 )
 
 var (
-	username string
-	sshKey   string
-	sshHost  string
+	usernameToSet string
+	sshKeyToSet   string
+	sshHost       string
 )
 
 func init() {
