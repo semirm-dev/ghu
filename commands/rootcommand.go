@@ -49,9 +49,17 @@ var refreshAgentCmd = &cobra.Command{
 
 // Execute will trigger root command.
 func Execute() error {
+	if err := makeBackups(); err != nil {
+		return err
+	}
 	return rootCmd.Execute()
 }
 
 func displayVersion() {
 	logrus.Infof("version: %s", version)
+}
+
+func makeBackups() error {
+	// TODO: backup ~/.gitconfig, ~/project/.git/config, ~/.ssh/config
+	return nil
 }
