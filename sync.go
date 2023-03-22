@@ -52,9 +52,13 @@ func SyncConfigReplacer(ghuConf io.Reader) error {
 		return err
 	}
 
-	logrus.Infof("writing ghu configuration: %v", conf)
+	logrus.Infof("syncing ghu configuration: %v", conf)
 
 	if err = ReplaceUsernameConfig(conf.Username, UsernameReplacer); err != nil {
+		return err
+	}
+
+	if err = ReplaceSshConfig(conf.SSH, conf.Host, SSHKeyReplacer); err != nil {
 		return err
 	}
 

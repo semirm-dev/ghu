@@ -34,8 +34,6 @@ func UsernameReplacer(conf io.Reader, username string) (string, error) {
 	lineIndent := "\t"
 	pattern := "name = "
 
-	logrus.Infof("new Github username: [%s]", username)
-
 	scanner := bufio.NewScanner(conf)
 	for scanner.Scan() {
 		line := scanner.Text()

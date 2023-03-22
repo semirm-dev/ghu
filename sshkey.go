@@ -42,8 +42,6 @@ func SSHKeyReplacer(conf io.Reader, sshKey, host string) (string, error) {
 	lineIndent := "  "
 	pattern := "IdentityFile ~/.ssh/"
 
-	logrus.Infof("new ssh key: [%s], for host: [%s]", sshKey, host)
-
 	scanner := bufio.NewScanner(conf)
 	var previousHost string
 	for scanner.Scan() {
