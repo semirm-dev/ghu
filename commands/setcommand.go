@@ -1,18 +1,14 @@
-package ghu
+package commands
 
 import (
 	"bytes"
+	"github.com/semirm-dev/ghu"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
-)
-
-const (
-	gitConfigPath = ".git/config"
-	sshConfPath   = ".ssh/config"
 )
 
 func init() {
@@ -29,14 +25,15 @@ var setCmd = &cobra.Command{
 	Long:  "Set value",
 	Run: func(cmd *cobra.Command, args []string) {
 		if uName := strings.TrimSpace(usernameToSet); uName != "" {
-			if err := replaceUsername(uName, ReplaceUsername); err != nil {
+			if err := replaceUsername(uName, ghu.ReplaceUsername); err != nil {
 				logrus.Error(err)
 			}
 		}
 
 		if key := strings.TrimSpace(sshKeyToSet); key != "" {
-			if err := replaceSsh(key, sshHost, ReplaceSSHKey); err != nil {
+			if err := replaceSsh(key, sshHost, ghu.ReplaceSSHKey); err != nil {
 				logrus.Error(err)
+				return
 			}
 
 			if err := refreshSSHAgent(); err != nil {
@@ -52,18 +49,12 @@ func replaceUsername(value string, replacer func(conf io.Reader, value string) (
 		return err
 	}
 
-	confBuf := bytes.NewBuffer(conf)
-
-	replacedConf, err := replacer(confBuf, value)
+	replacedConf, err := replacer(bytes.NewBuffer(conf), value)
 	if err != nil {
 		return err
 	}
 
-	if err := os.WriteFile(gitConfigPath, []byte(replacedConf), os.ModePerm); err != nil {
-		return err
-	}
-
-	return nil
+	return os.WriteFile(gitConfigPath, []byte(replacedConf), os.ModePerm)
 }
 
 func replaceSsh(value, host string, replacer func(conf io.Reader, value, host string) (string, error)) error {
@@ -79,16 +70,10 @@ func replaceSsh(value, host string, replacer func(conf io.Reader, value, host st
 		return err
 	}
 
-	confBuf := bytes.NewBuffer(conf)
-
-	replacedConf, err := replacer(confBuf, value, host)
+	replacedConf, err := replacer(bytes.NewBuffer(conf), value, host)
 	if err != nil {
 		return err
 	}
 
-	if err := os.WriteFile(confPath, []byte(replacedConf), os.ModePerm); err != nil {
-		return err
-	}
-
-	return nil
+	return os.WriteFile(confPath, []byte(replacedConf), os.ModePerm)
 }

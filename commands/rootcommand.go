@@ -1,13 +1,17 @@
-package ghu
+package commands
 
 import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"os"
 	"os/exec"
 )
 
 const (
-	version = "0.0.1"
+	version       = "0.0.1"
+	gitConfigPath = ".git/config"
+	sshConfPath   = ".ssh/config"
+	ghuConfPath   = ".ghu/config.yaml"
 )
 
 var (
@@ -59,4 +63,12 @@ func displayVersion() {
 func refreshSSHAgent() error {
 	cmd := exec.Command("bash", "-c", "eval \"$(ssh-agent -s)\"")
 	return cmd.Run()
+}
+
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
 }

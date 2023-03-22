@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/semirm-dev/ghu"
+	"github.com/semirm-dev/ghu/commands"
 	"github.com/sirupsen/logrus"
 )
 
 func main() {
-	if err := ghu.Execute(); err != nil {
+	if err := commands.Execute(); err != nil {
 		logrus.Fatal(err)
 	}
 }
