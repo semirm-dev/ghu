@@ -39,6 +39,7 @@ func SyncConfig(replacer func(conf io.Reader) error) error {
 	return replacer(bytes.NewBuffer(conf))
 }
 
+// SyncConfigReplacer replaces both username and ssh key from ~/.ghu/config.yaml
 func SyncConfigReplacer(ghuConf io.Reader) error {
 	confContent, err := io.ReadAll(ghuConf)
 	if err != nil {
