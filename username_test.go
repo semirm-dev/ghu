@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestReplaceUsername(t *testing.T) {
+func TestUsernameReplacer(t *testing.T) {
 	currentConfig := `
 	[user]
 	name = invaliduser
@@ -30,7 +30,7 @@ func TestReplaceUsername(t *testing.T) {
 `
 	ghConf := bytes.NewBuffer([]byte(currentConfig))
 
-	replacedConfig, err := ghu.ReplaceUsername(ghConf, "user-1")
+	replacedConfig, err := ghu.UsernameReplacer(ghConf, "user-1")
 	assert.NoError(t, err)
 	assert.Equal(t, expectedConfig, replacedConfig)
 }

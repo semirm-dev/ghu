@@ -2,14 +2,34 @@ package ghu
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"io"
+	"os"
 	"strings"
 )
 
-// ReplaceUsername replaces an existing GitHub username with new one.
-func ReplaceUsername(conf io.Reader, username string) (string, error) {
+const (
+	gitConfigPath = ".git/config"
+)
+
+func ReplaceUsernameConfig(value string, replacer func(conf io.Reader, value string) (string, error)) error {
+	conf, err := os.ReadFile(gitConfigPath)
+	if err != nil {
+		return err
+	}
+
+	replacedConf, err := replacer(bytes.NewBuffer(conf), value)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(gitConfigPath, []byte(replacedConf), os.ModePerm)
+}
+
+// UsernameReplacer replaces an existing GitHub username with new one.
+func UsernameReplacer(conf io.Reader, username string) (string, error) {
 	var replaced string
 	lineIndent := "\t"
 	pattern := "name = "

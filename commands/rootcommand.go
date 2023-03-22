@@ -1,17 +1,13 @@
 package commands
 
 import (
+	"github.com/semirm-dev/ghu"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"os"
-	"os/exec"
 )
 
 const (
-	version       = "0.0.1"
-	gitConfigPath = ".git/config"
-	sshConfPath   = ".ssh/config"
-	ghuConfPath   = ".ghu/config.yaml"
+	version = "0.0.1"
 )
 
 var (
@@ -45,7 +41,7 @@ var refreshAgentCmd = &cobra.Command{
 	Short: "Refresh ssh agent",
 	Long:  "Refresh ssh agent",
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := refreshSSHAgent(); err != nil {
+		if err := ghu.RefreshSSHAgent(); err != nil {
 			logrus.Error(err)
 		}
 	},
@@ -58,17 +54,4 @@ func Execute() error {
 
 func displayVersion() {
 	logrus.Infof("version: %s", version)
-}
-
-func refreshSSHAgent() error {
-	cmd := exec.Command("bash", "-c", "eval \"$(ssh-agent -s)\"")
-	return cmd.Run()
-}
-
-func fileExists(filename string) bool {
-	info, err := os.Stat(filename)
-	if os.IsNotExist(err) {
-		return false
-	}
-	return !info.IsDir()
 }

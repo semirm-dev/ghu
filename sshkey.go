@@ -2,14 +2,42 @@ package ghu
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"io"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
-// ReplaceSSHKey replaces an existing GitHub ssh key with new one.
-func ReplaceSSHKey(conf io.Reader, sshKey, host string) (string, error) {
+const (
+	sshConfPath = ".ssh/config"
+)
+
+func ReplaceSshConfig(value, host string, replacer func(conf io.Reader, value, host string) (string, error)) error {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+
+	confPath := filepath.Join(home, sshConfPath)
+
+	conf, err := os.ReadFile(confPath)
+	if err != nil {
+		return err
+	}
+
+	replacedConf, err := replacer(bytes.NewBuffer(conf), value, host)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(confPath, []byte(replacedConf), os.ModePerm)
+}
+
+// SSHKeyReplacer replaces an existing GitHub ssh key with new one.
+func SSHKeyReplacer(conf io.Reader, sshKey, host string) (string, error) {
 	var replaced string
 	lineIndent := "  "
 	pattern := "IdentityFile ~/.ssh/"
