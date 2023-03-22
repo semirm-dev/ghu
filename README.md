@@ -2,6 +2,8 @@
 
 Easily change GitHub user and associated ssh key
 
+> NOTE: Call from project's root!
+
  ```shell 
  $ ghu
  ```
