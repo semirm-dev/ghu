@@ -56,6 +56,7 @@ func TestReplaceSSHKey_MultipleHosts(t *testing.T) {
   AddKeysToAgent yes
   UseKeychain yes
   IdentityFile ~/.ssh/private_git
+
 Host github.com/other-host
   AddKeysToAgent yes
   UseKeychain yes
@@ -65,6 +66,7 @@ Host github.com/other-host
   AddKeysToAgent yes
   UseKeychain yes
   IdentityFile ~/.ssh/private
+
 Host github.com/other-host
   AddKeysToAgent yes
   UseKeychain yes

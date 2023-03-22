@@ -19,7 +19,8 @@ func ReplaceUsername(conf io.Reader, username string) (string, error) {
 	scanner := bufio.NewScanner(conf)
 	for scanner.Scan() {
 		line := scanner.Text()
-		if line == "" {
+		if strings.TrimSpace(line) == "" {
+			replaced += "\n"
 			continue
 		}
 
@@ -49,7 +50,8 @@ func ReplaceSSHKey(conf io.Reader, sshKey, host string) (string, error) {
 	var previousHost string
 	for scanner.Scan() {
 		line := scanner.Text()
-		if line == "" {
+		if strings.TrimSpace(line) == "" {
+			replaced += "\n"
 			continue
 		}
 
