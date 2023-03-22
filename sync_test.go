@@ -2,6 +2,6 @@ package ghu_test
 
 import "testing"
 
-func TestSyncConfig(t *testing.T) {
-
+func TestSyncConfigReplacer(t *testing.T) {
+	
 }
