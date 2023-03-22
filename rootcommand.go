@@ -3,6 +3,7 @@ package ghu
 import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"os/exec"
 )
 
 const (
@@ -17,6 +18,7 @@ var (
 
 func init() {
 	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(refreshAgentCmd)
 }
 
 var rootCmd = &cobra.Command{
@@ -34,6 +36,17 @@ var versionCmd = &cobra.Command{
 	},
 }
 
+var refreshAgentCmd = &cobra.Command{
+	Use:   "ragent",
+	Short: "Refresh ssh agent",
+	Long:  "Refresh ssh agent",
+	Run: func(cmd *cobra.Command, args []string) {
+		if err := refreshSSHAgent(); err != nil {
+			logrus.Error(err)
+		}
+	},
+}
+
 // Execute will trigger root command.
 func Execute() error {
 	return rootCmd.Execute()
@@ -41,4 +54,9 @@ func Execute() error {
 
 func displayVersion() {
 	logrus.Infof("version: %s", version)
+}
+
+func refreshSSHAgent() error {
+	cmd := exec.Command("bash", "-c", "eval \"$(ssh-agent -s)\"")
+	return cmd.Run()
 }

@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/cobra"
 	"io"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -92,9 +91,4 @@ func replaceSsh(value, host string, replacer func(conf io.Reader, value, host st
 	}
 
 	return nil
-}
-
-func refreshSSHAgent() error {
-	cmd := exec.Command("bash", "-c", "eval \"$(ssh-agent -s)\"")
-	return cmd.Run()
 }
