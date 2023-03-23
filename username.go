@@ -69,8 +69,8 @@ func UsernameReplacer(conf io.Reader, username string) (string, error) {
 	return replaced, nil
 }
 
-func ReplaceUsernameConfigV2(value string, confReader io.Reader, confWriter io.Writer, replacerFunc UsernameReplacerFunc) error {
-	conf, err := io.ReadAll(confReader)
+func ReplaceUsernameConfigV2(value string, confReplacer io.ReadWriter, replacerFunc UsernameReplacerFunc) error {
+	conf, err := io.ReadAll(confReplacer)
 	if err != nil {
 		return err
 	}
@@ -89,18 +89,11 @@ func ReplaceUsernameConfigV2(value string, confReader io.Reader, confWriter io.W
 
 	logrus.Infof("%s \n%s\n", colr.Green("new GitHub config to write:"), replacedConf)
 
-	_, err = io.WriteString(confWriter, replacedConf)
+	_, err = io.WriteString(confReplacer, replacedConf)
 	return err
 }
 
-func FileReader(path string) io.Reader {
+func FileUsernameReplacer(path string) io.ReadWriter {
 	f, _ := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
-	return f
-}
-
-func FileWriter(path string) io.Writer {
-	f, _ := os.OpenFile(path, os.O_RDWR|os.O_CREATE, os.ModePerm)
-	f.Truncate(0)
-	f.Seek(0, 0)
 	return f
 }

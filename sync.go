@@ -64,7 +64,7 @@ func SyncConfigReplacer(ghuConf io.Reader) error {
 		return err
 	}
 
-	//if err = ReplaceUsernameConfigV2(conf.Username, FileReader(GitConfigPath), FileWriter(GitConfigPath), UsernameReplacer); err != nil {
+	//if err = ReplaceUsernameConfigV2(conf.Username, FileUsernameReplacer(GitConfigPath), UsernameReplacer); err != nil {
 	//	return err
 	//}
 
