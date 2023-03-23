@@ -11,8 +11,15 @@ import (
 )
 
 func RefreshSSHAgent() error {
-	cmd := exec.Command("bash", "-c", "eval \"$(ssh-agent -s)\"")
-	return cmd.Run()
+	cmd := exec.Command("bash", "-c", "eval $(ssh-agent -s)")
+	out, err := cmd.Output()
+	if err != nil {
+		return err
+	}
+
+	logrus.Infof("%s", out)
+
+	return nil
 }
 
 func createGhuConfigIfNotExists(confPath string) error {
