@@ -19,7 +19,7 @@ type Config struct {
 	Host     string `yaml:"host"`
 }
 
-func SyncConfig(replacer func(conf io.Reader) error) error {
+func SyncConfig(replacerFunc func(conf io.Reader) error) error {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return err
@@ -36,7 +36,7 @@ func SyncConfig(replacer func(conf io.Reader) error) error {
 		return err
 	}
 
-	return replacer(bytes.NewBuffer(conf))
+	return replacerFunc(bytes.NewBuffer(conf))
 }
 
 // SyncConfigReplacer replaces both username and ssh key from ~/.ghu/config.yaml

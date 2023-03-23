@@ -15,7 +15,7 @@ const (
 	sshConfPath = ".ssh/config"
 )
 
-func ReplaceSshConfig(value, host string, replacer func(conf io.Reader, value, host string) (string, error)) error {
+func ReplaceSshConfig(value, host string, replacerFunc func(conf io.Reader, value, host string) (string, error)) error {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return err
@@ -28,7 +28,7 @@ func ReplaceSshConfig(value, host string, replacer func(conf io.Reader, value, h
 		return err
 	}
 
-	replacedConf, err := replacer(bytes.NewBuffer(conf), value, host)
+	replacedConf, err := replacerFunc(bytes.NewBuffer(conf), value, host)
 	if err != nil {
 		return err
 	}

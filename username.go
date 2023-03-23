@@ -14,13 +14,13 @@ const (
 	gitConfigPath = ".git/config"
 )
 
-func ReplaceUsernameConfig(value string, replacer func(conf io.Reader, value string) (string, error)) error {
+func ReplaceUsernameConfig(value string, replacerFunc func(conf io.Reader, value string) (string, error)) error {
 	conf, err := os.ReadFile(gitConfigPath)
 	if err != nil {
 		return err
 	}
 
-	replacedConf, err := replacer(bytes.NewBuffer(conf), value)
+	replacedConf, err := replacerFunc(bytes.NewBuffer(conf), value)
 	if err != nil {
 		return err
 	}
