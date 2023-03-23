@@ -11,21 +11,33 @@ import (
 )
 
 const (
-	gitConfigPath = ".git/config"
+	GitConfigPath = ".git/config"
 )
 
-func ReplaceUsernameConfig(value string, replacerFunc func(conf io.Reader, value string) (string, error)) error {
-	conf, err := os.ReadFile(gitConfigPath)
+// UsernameReplacerFunc will replace GitHub username
+type UsernameReplacerFunc func(conf io.Reader, value string) (string, error)
+
+func ReplaceUsernameConfig(value string, replacerFunc UsernameReplacerFunc) error {
+	conf, err := os.ReadFile(GitConfigPath)
 	if err != nil {
 		return err
 	}
+
+	logrus.Infof("current Github config: \n%s\n", conf)
 
 	replacedConf, err := replacerFunc(bytes.NewBuffer(conf), value)
 	if err != nil {
 		return err
 	}
 
-	return os.WriteFile(gitConfigPath, []byte(replacedConf), os.ModePerm)
+	if strings.TrimSpace(replacedConf) == "" {
+		logrus.Info("nothing to replace")
+		return nil
+	}
+
+	logrus.Infof("new GitHub config to write: \n%s\n", replacedConf)
+
+	return os.WriteFile(GitConfigPath, []byte(replacedConf), os.ModePerm)
 }
 
 // UsernameReplacer replaces an existing GitHub username with new one.

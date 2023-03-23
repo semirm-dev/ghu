@@ -15,7 +15,10 @@ const (
 	sshConfPath = ".ssh/config"
 )
 
-func ReplaceSshConfig(value, host string, replacerFunc func(conf io.Reader, value, host string) (string, error)) error {
+// SSHKeyReplacerFunc will replace GitHub ssh key
+type SSHKeyReplacerFunc func(conf io.Reader, value, host string) (string, error)
+
+func ReplaceSshConfig(value, host string, replacerFunc SSHKeyReplacerFunc) error {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return err
@@ -28,10 +31,14 @@ func ReplaceSshConfig(value, host string, replacerFunc func(conf io.Reader, valu
 		return err
 	}
 
+	logrus.Infof("current ssh config: \n%s\n", conf)
+
 	replacedConf, err := replacerFunc(bytes.NewBuffer(conf), value, host)
 	if err != nil {
 		return err
 	}
+
+	logrus.Infof("new ssh config to write: \n%s\n", replacedConf)
 
 	return os.WriteFile(confPath, []byte(replacedConf), os.ModePerm)
 }
