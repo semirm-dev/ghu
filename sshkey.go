@@ -39,6 +39,11 @@ func ReplaceSshConfig(value, host string, replacerFunc SSHKeyReplacerFunc) error
 		return err
 	}
 
+	if strings.TrimSpace(replacedConf) == "" {
+		logrus.Info(colr.Yellow("nothing to replace"))
+		return nil
+	}
+
 	logrus.Infof("%s \n%s\n", colr.Green("new ssh config to write:"), replacedConf)
 
 	return os.WriteFile(confPath, []byte(replacedConf), os.ModePerm)

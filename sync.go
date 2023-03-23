@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 const (
@@ -37,6 +38,11 @@ func SyncConfig(replacerFunc func(conf io.Reader) error) error {
 		return err
 	}
 
+	if strings.TrimSpace(string(conf)) == "" {
+		logrus.Info(colr.Yellow("nothing to replace"))
+		return nil
+	}
+
 	return replacerFunc(bytes.NewBuffer(conf))
 }
 
@@ -57,6 +63,10 @@ func SyncConfigReplacer(ghuConf io.Reader) error {
 	if err = ReplaceUsernameConfig(conf.Username, UsernameReplacer); err != nil {
 		return err
 	}
+
+	//if err = ReplaceUsernameConfigV2(conf.Username, FileReader(GitConfigPath), FileWriter(GitConfigPath), UsernameReplacer); err != nil {
+	//	return err
+	//}
 
 	if err = ReplaceSshConfig(conf.SSH, conf.Host, SSHKeyReplacer); err != nil {
 		return err
