@@ -89,11 +89,13 @@ func ReplaceUsernameConfigV2(value string, confReplacer io.ReadWriter, replacerF
 
 	logrus.Infof("%s \n%s\n", colr.Green("new GitHub config to write:"), replacedConf)
 
+	// TODO: truncate file before write
+
 	_, err = io.WriteString(confReplacer, replacedConf)
 	return err
 }
 
 func FileUsernameReplacer(path string) io.ReadWriter {
-	f, _ := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
+	f, _ := os.OpenFile(path, os.O_RDWR|os.O_CREATE, os.ModePerm)
 	return f
 }
