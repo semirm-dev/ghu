@@ -2,6 +2,7 @@ package ghu
 
 import (
 	"bytes"
+	"github.com/gobackpack/colr"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 	"io"
@@ -51,7 +52,7 @@ func SyncConfigReplacer(ghuConf io.Reader) error {
 		return err
 	}
 
-	logrus.Infof("syncing ghu configuration: %v", conf)
+	logrus.Infof("%s %v", colr.Magenta("syncing ghu configuration:"), conf)
 
 	if err = ReplaceUsernameConfig(conf.Username, UsernameReplacer); err != nil {
 		return err

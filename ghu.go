@@ -3,6 +3,7 @@ package ghu
 import (
 	"bytes"
 	"errors"
+	"github.com/gobackpack/colr"
 	"github.com/sirupsen/logrus"
 	"io"
 	"os"
@@ -17,7 +18,7 @@ func RefreshSSHAgent() error {
 		return err
 	}
 
-	logrus.Infof("%s", out)
+	logrus.Infof(colr.Green("%s"), out)
 
 	return nil
 }

@@ -19,3 +19,13 @@ Easily change GitHub user and associated ssh key
     - -k [sshkey]
 - [ ] generate
     - -p [path]
+
+  
+#### GitHub username
+
+![img.png](img.png)
+
+#### SSH key
+
+![img_1.png](img_1.png)
+![img_2.png](img_2.png)

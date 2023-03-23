@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"github.com/gobackpack/colr"
 	"github.com/sirupsen/logrus"
 	"io"
 	"os"
@@ -31,14 +32,14 @@ func ReplaceSshConfig(value, host string, replacerFunc SSHKeyReplacerFunc) error
 		return err
 	}
 
-	logrus.Infof("current ssh config: \n%s\n", conf)
+	logrus.Infof("%s \n%s\n", colr.Cyan("current ssh config:"), conf)
 
 	replacedConf, err := replacerFunc(bytes.NewBuffer(conf), value, host)
 	if err != nil {
 		return err
 	}
 
-	logrus.Infof("new ssh config to write: \n%s\n", replacedConf)
+	logrus.Infof("%s \n%s\n", colr.Green("new ssh config to write:"), replacedConf)
 
 	return os.WriteFile(confPath, []byte(replacedConf), os.ModePerm)
 }
@@ -66,7 +67,7 @@ func SSHKeyReplacer(conf io.Reader, sshKey, host string) (string, error) {
 
 		if strings.Contains(line, pattern) && (host == "" || host == previousHost) {
 			oldSshKey := strings.TrimPrefix(strings.TrimSpace(line), pattern)
-			logrus.Infof("replacing old ssh key [%s] with new ssh key: [%s], for host: [%s]", oldSshKey, sshKey, host)
+			logrus.Infof(colr.Magenta("replacing old ssh key [%s] with new ssh key: [%s], for host: [%s]"), oldSshKey, sshKey, host)
 			lineToWrite = fmt.Sprintf("%v%v%v\n", lineIndent, pattern, sshKey)
 		}
 

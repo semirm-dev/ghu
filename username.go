@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"github.com/gobackpack/colr"
 	"github.com/sirupsen/logrus"
 	"io"
 	"os"
@@ -23,7 +24,7 @@ func ReplaceUsernameConfig(value string, replacerFunc UsernameReplacerFunc) erro
 		return err
 	}
 
-	logrus.Infof("current Github config: \n%s\n", conf)
+	logrus.Infof("%s \n%s\n", colr.Cyan("current Github config:"), conf)
 
 	replacedConf, err := replacerFunc(bytes.NewBuffer(conf), value)
 	if err != nil {
@@ -35,7 +36,7 @@ func ReplaceUsernameConfig(value string, replacerFunc UsernameReplacerFunc) erro
 		return nil
 	}
 
-	logrus.Infof("new GitHub config to write: \n%s\n", replacedConf)
+	logrus.Infof("%s \n%s\n", colr.Green("new GitHub config to write:"), replacedConf)
 
 	return os.WriteFile(GitConfigPath, []byte(replacedConf), os.ModePerm)
 }
@@ -58,7 +59,7 @@ func UsernameReplacer(conf io.Reader, username string) (string, error) {
 
 		if strings.Contains(line, pattern) {
 			oldUsername := strings.TrimPrefix(strings.TrimSpace(line), pattern)
-			logrus.Infof("replacing old Github username [%s] with new username: [%s]", oldUsername, username)
+			logrus.Infof(colr.Magenta("replacing old Github username [%s] with new username: [%s]"), oldUsername, username)
 			lineToWrite = fmt.Sprintf("%v%v%v\n", lineIndent, pattern, username)
 		}
 
@@ -66,4 +67,33 @@ func UsernameReplacer(conf io.Reader, username string) (string, error) {
 	}
 
 	return replaced, nil
+}
+
+func ReplaceUsernameConfigV2(value string, replacer io.ReadWriter, replacerFunc UsernameReplacerFunc) error {
+	conf, err := io.ReadAll(replacer)
+	if err != nil {
+		return err
+	}
+
+	logrus.Infof("%s \n%s\n", colr.Cyan("current Github config:"), conf)
+
+	replacedConf, err := replacerFunc(bytes.NewBuffer(conf), value)
+	if err != nil {
+		return err
+	}
+
+	if strings.TrimSpace(replacedConf) == "" {
+		logrus.Info("nothing to replace")
+		return nil
+	}
+
+	logrus.Infof("%s \n%s\n", colr.Green("new GitHub config to write:"), replacedConf)
+
+	_, err = io.WriteString(replacer, replacedConf)
+	return err
+}
+
+func FileUsernameReplacer(path string) io.ReadWriter {
+	f, _ := os.OpenFile(path, os.O_RDWR, os.ModePerm)
+	return f
 }
