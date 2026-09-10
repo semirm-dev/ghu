@@ -8,10 +8,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/semirm-dev/ghu/internal/kernel"
-	"github.com/semirm-dev/ghu/internal/kernel/command"
-	"github.com/semirm-dev/ghu/internal/kernel/sys"
-	"github.com/semirm-dev/ghu/internal/ui"
+	"github.com/semirm-dev/ghu/internal/core"
+	"github.com/semirm-dev/ghu/internal/core/command"
+	"github.com/semirm-dev/ghu/internal/core/sys"
+	"github.com/semirm-dev/ghu/internal/core/ui"
 )
 
 // ShowKeys are resolved and reported in this order.
@@ -74,7 +74,7 @@ func (s *Set) Show(ctx context.Context) (Status, error) {
 	}
 
 	status := Status{
-		Dir:    kernel.Tildify(dir, home),
+		Dir:    core.Tildify(dir, home),
 		InRepo: s.git.InRepo(ctx),
 		Values: make([]Value, 0, len(ShowKeys)),
 	}
@@ -97,7 +97,7 @@ func (s *Set) Show(ctx context.Context) (Status, error) {
 		}
 	}
 
-	matched, ok := kernel.MatchCurrent(s.Config, s.Layout.Home)
+	matched, ok := core.MatchCurrent(s.Config, s.Layout.Home)
 	if ok {
 		status.Profile = matched.Name
 		status.ProfileEmail = matched.Email
@@ -113,8 +113,8 @@ func (s *Set) Show(ctx context.Context) (Status, error) {
 		case err != nil:
 			return Status{}, fmt.Errorf("reading local include.path: %w", err)
 		default:
-			status.Override = kernel.Tildify(include, home)
-			status.OverrideManaged = s.Layout.OwnsProfilePath(kernel.Expand(include, home))
+			status.Override = core.Tildify(include, home)
+			status.OverrideManaged = s.Layout.OwnsProfilePath(core.Expand(include, home))
 		}
 	}
 

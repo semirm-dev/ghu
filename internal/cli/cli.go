@@ -13,15 +13,15 @@ import (
 
 	"github.com/charmbracelet/colorprofile"
 
-	"github.com/semirm-dev/ghu/internal/kernel"
-	"github.com/semirm-dev/ghu/internal/kernel/command"
-	"github.com/semirm-dev/ghu/internal/kernel/sys"
+	"github.com/semirm-dev/ghu/internal/core"
+	"github.com/semirm-dev/ghu/internal/core/command"
+	"github.com/semirm-dev/ghu/internal/core/sys"
 	"github.com/semirm-dev/ghu/internal/profile"
 )
 
 // resolve fills in the collaborators for one invocation.
 func resolve(e *command.Env) error {
-	layout, err := kernel.NewLayout("")
+	layout, err := core.NewLayout("")
 	if err != nil {
 		return fmt.Errorf("resolving configuration: %w", err)
 	}

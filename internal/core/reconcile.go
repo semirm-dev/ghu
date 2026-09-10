@@ -1,4 +1,4 @@
-package kernel
+package core
 
 // Reconciling ~/.ghu and ~/.gitconfig to match a config: which files get
 // generated, which stale ones go, and which includeIf entries ghu owns.
@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/semirm-dev/ghu/internal/kernel/sys"
+	"github.com/semirm-dev/ghu/internal/core/sys"
 )
 
 type ApplyResult struct {

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/semirm-dev/ghu/internal/kernel/command"
-	"github.com/semirm-dev/ghu/internal/ui"
+	"github.com/semirm-dev/ghu/internal/core/command"
+	"github.com/semirm-dev/ghu/internal/core/ui"
 )
 
 // What a doctor run found, and how it prints.

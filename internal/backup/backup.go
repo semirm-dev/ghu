@@ -16,10 +16,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/semirm-dev/ghu/internal/kernel"
-	"github.com/semirm-dev/ghu/internal/kernel/command"
-	"github.com/semirm-dev/ghu/internal/kernel/sys"
-	"github.com/semirm-dev/ghu/internal/ui"
+	"github.com/semirm-dev/ghu/internal/core"
+	"github.com/semirm-dev/ghu/internal/core/command"
+	"github.com/semirm-dev/ghu/internal/core/sys"
+	"github.com/semirm-dev/ghu/internal/core/ui"
 )
 
 // Result is what a restore did, or would have done under --dry-run.
@@ -90,7 +90,7 @@ func Command(e *command.Env) *cobra.Command {
 
 // List reports the backups ghu holds, newest first, with the pivot last: it is
 // the oldest thing there by definition.
-func List(l kernel.Layout) ([]Entry, error) {
+func List(l core.Layout) ([]Entry, error) {
 	dir := l.BackupsDir()
 
 	found, err := os.ReadDir(dir)
@@ -114,7 +114,7 @@ func List(l kernel.Layout) ([]Entry, error) {
 			Name:  f.Name(),
 			Size:  info.Size(),
 			Taken: info.ModTime(),
-			Pivot: f.Name() == kernel.PivotName,
+			Pivot: f.Name() == core.PivotName,
 		})
 	}
 
@@ -131,7 +131,7 @@ func List(l kernel.Layout) ([]Entry, error) {
 // answer to "put it back the way it was".
 func Run(e *command.Env, from string) (Result, error) {
 	if from == "" {
-		from = kernel.PivotName
+		from = core.PivotName
 	}
 	if strings.ContainsRune(from, filepath.Separator) || from == ".." {
 		return Result{}, fmt.Errorf("a backup is named by its file in ~/.ghu/backups, not by a path: %q", from)
@@ -142,7 +142,7 @@ func Run(e *command.Env, from string) (Result, error) {
 
 	data, err := os.ReadFile(src)
 	if os.IsNotExist(err) {
-		if from == kernel.PivotName {
+		if from == core.PivotName {
 			return Result{}, errors.New(
 				"there is no backup to restore: ghu has not changed ~/.gitconfig on this machine")
 		}
@@ -156,7 +156,7 @@ func Run(e *command.Env, from string) (Result, error) {
 	res := Result{
 		From:   from,
 		To:     dst,
-		Pivot:  from == kernel.PivotName,
+		Pivot:  from == core.PivotName,
 		DryRun: e.DryRun,
 	}
 
@@ -193,11 +193,11 @@ func render(e *command.Env, res Result) error {
 	}
 
 	fmt.Fprintln(e.Out, ui.Good.Render(ui.Marker+" "+verb+" ")+what)
-	fmt.Fprintln(e.Out, ui.Muted.Render("  to "+kernel.Tildify(res.To, home)))
+	fmt.Fprintln(e.Out, ui.Muted.Render("  to "+core.Tildify(res.To, home)))
 
 	if res.Replaced != "" {
 		fmt.Fprintln(e.Out, ui.Muted.Render("  the file it replaced is kept at "+
-			kernel.Tildify(res.Replaced, home)))
+			core.Tildify(res.Replaced, home)))
 	}
 	if res.DryRun {
 		fmt.Fprintln(e.Out, ui.Muted.Render("  dry run: nothing was written"))

@@ -18,10 +18,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/semirm-dev/ghu/internal/kernel"
-	"github.com/semirm-dev/ghu/internal/kernel/command"
-	"github.com/semirm-dev/ghu/internal/kernel/sys"
-	"github.com/semirm-dev/ghu/internal/ui"
+	"github.com/semirm-dev/ghu/internal/core"
+	"github.com/semirm-dev/ghu/internal/core/command"
+	"github.com/semirm-dev/ghu/internal/core/sys"
+	"github.com/semirm-dev/ghu/internal/core/ui"
 )
 
 const includeKey = "include.path"
@@ -57,7 +57,7 @@ func (s *Set) Use(ctx context.Context, name string) (UseResult, error) {
 
 	p, ok := s.Config.Find(name)
 	if !ok {
-		return UseResult{}, kernel.UnknownProfile(s.Config, name)
+		return UseResult{}, core.UnknownProfile(s.Config, name)
 	}
 
 	file := s.Layout.ProfileFile(p.Name)
@@ -80,14 +80,14 @@ func (s *Set) Use(ctx context.Context, name string) (UseResult, error) {
 		PreviousProfile: s.profileNameFor(previous),
 		User:            p.User,
 		Email:           p.Email,
-		Key:             kernel.Tildify(kernel.Expand(p.KeyPath(), s.Layout.Home), s.Layout.Home),
+		Key:             core.Tildify(core.Expand(p.KeyPath(), s.Layout.Home), s.Layout.Home),
 		DryRun:          s.git.DryRun(),
 	}
 	res.ReplacedForeign = previous != "" && !s.Layout.OwnsProfilePath(previous)
 
 	// An explicit `use` beats an implicit directory match, so a redundant
 	// override is still applied -- it is only worth saying so.
-	if match, ok := kernel.MatchCurrent(s.Config, s.Layout.Home); ok && strings.EqualFold(match.Name, p.Name) {
+	if match, ok := core.MatchCurrent(s.Config, s.Layout.Home); ok && strings.EqualFold(match.Name, p.Name) {
 		res.Redundant = true
 	}
 
@@ -147,7 +147,7 @@ func (s *Set) profileNameFor(path string) string {
 	if path == "" || !s.Layout.OwnsProfilePath(path) {
 		return ""
 	}
-	return strings.TrimSuffix(filepath.Base(path), kernel.ProfileFileSuffix)
+	return strings.TrimSuffix(filepath.Base(path), core.ProfileFileSuffix)
 }
 
 func useCmd(e *command.Env) *cobra.Command {

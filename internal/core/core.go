@@ -1,4 +1,4 @@
-// Package kernel is what more than one ghu feature needs: the profile model,
+// Package core is what more than one ghu feature needs: the profile model,
 // the ~/.ghu layout, directory resolution, the git config a profile implies,
 // and the reconciler that writes it.
 //
@@ -18,7 +18,7 @@
 //
 // Dry-run state is stored nowhere. Reconciler asks the Git it holds, which asks
 // the one sys.Runner behind it.
-package kernel
+package core
 
 import (
 	"fmt"
@@ -27,7 +27,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/semirm-dev/ghu/internal/kernel/sys"
+	"github.com/semirm-dev/ghu/internal/core/sys"
 )
 
 // The domain model: a profile, and the config that holds a set of them.

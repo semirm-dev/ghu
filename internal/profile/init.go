@@ -10,10 +10,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/semirm-dev/ghu/internal/kernel"
-	"github.com/semirm-dev/ghu/internal/kernel/command"
+	"github.com/semirm-dev/ghu/internal/core"
+	"github.com/semirm-dev/ghu/internal/core/command"
+	"github.com/semirm-dev/ghu/internal/core/ui"
 	"github.com/semirm-dev/ghu/internal/tui"
-	"github.com/semirm-dev/ghu/internal/ui"
 )
 
 type InitResult struct {
@@ -26,7 +26,7 @@ type InitResult struct {
 	Reset       []string `json:"reset,omitempty"`
 	ResetBackup string   `json:"reset_backup,omitempty"`
 
-	Apply kernel.ApplyResult `json:"apply"`
+	Apply core.ApplyResult `json:"apply"`
 }
 
 // Init prepares ~/.ghu and reconciles every profile to disk. Safe to re-run.
@@ -57,7 +57,7 @@ func (s *Set) init(ctx context.Context, reset bool) (InitResult, error) {
 		if err := s.Layout.EnsureDirs(); err != nil {
 			return result, err
 		}
-		if err := kernel.EnsureConfigFile(s.Layout.ConfigFile()); err != nil {
+		if err := core.EnsureConfigFile(s.Layout.ConfigFile()); err != nil {
 			return result, err
 		}
 	}
@@ -70,7 +70,7 @@ func (s *Set) init(ctx context.Context, reset bool) (InitResult, error) {
 		result.Reset = s.Config.Names()
 
 		if !s.dryRun() {
-			backup, err := kernel.BackupConfig(s.Layout.ConfigFile(), time.Now())
+			backup, err := core.BackupConfig(s.Layout.ConfigFile(), time.Now())
 			if err != nil {
 				return result, err
 			}
@@ -182,7 +182,7 @@ func initCmd(e *command.Env, generate command.Action) *cobra.Command {
 					ui.Muted.Render(" ("+strings.Join(result.Reset, ", ")+")"))
 				if result.ResetBackup != "" {
 					fmt.Fprintln(out, ui.Muted.Render("  the config that held them is kept at "+
-						kernel.Tildify(result.ResetBackup, e.Layout.Home)))
+						core.Tildify(result.ResetBackup, e.Layout.Home)))
 				}
 				fmt.Fprintln(out, ui.Muted.Render("  backups and ssh keys were not touched"))
 			}

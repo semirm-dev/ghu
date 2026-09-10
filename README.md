@@ -382,12 +382,13 @@ internal/
   ssh/            ghu ssh generate
   doctor/         ghu doctor
   backup/         ghu restore
-  kernel/         the model, ~/.ghu/config.yaml, the layout, directory
+  core/           the model, ~/.ghu/config.yaml, the layout, directory
                   resolution, the git-config contract, the reconciler
     sys/          subprocesses, git config, ssh, atomic writes
     command/      the context a command runs in
+    ui/           the shared lipgloss styles
   cli/            assembles the command tree; owns only `ghu version`
-  tui/  ui/       the profile form, and the shared styles
+  tui/            the form that collects a profile
 ```
 
 The core returns values and never renders: operations hand back structs that

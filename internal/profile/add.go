@@ -7,14 +7,14 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/semirm-dev/ghu/internal/kernel"
-	"github.com/semirm-dev/ghu/internal/kernel/command"
+	"github.com/semirm-dev/ghu/internal/core"
+	"github.com/semirm-dev/ghu/internal/core/command"
+	"github.com/semirm-dev/ghu/internal/core/ui"
 	"github.com/semirm-dev/ghu/internal/tui"
-	"github.com/semirm-dev/ghu/internal/ui"
 )
 
 type AddOpts struct {
-	Profile kernel.Profile
+	Profile core.Profile
 
 	// Generate records the intent only. Generating the key is a second
 	// operation, so an adapter can report the profile before the key exists.
@@ -22,9 +22,9 @@ type AddOpts struct {
 }
 
 type AddResult struct {
-	Profile  kernel.Profile     `json:"profile"`
-	Generate bool               `json:"generate"`
-	Apply    kernel.ApplyResult `json:"apply"`
+	Profile  core.Profile     `json:"profile"`
+	Generate bool             `json:"generate"`
+	Apply    core.ApplyResult `json:"apply"`
 }
 
 // Add appends a profile and reconciles.
@@ -39,7 +39,7 @@ func (s *Set) Add(ctx context.Context, opts AddOpts) (AddResult, error) {
 	generate := opts.Generate
 
 	if p.Key == "" {
-		p.Key = kernel.KeyDir + "/id_" + p.Name
+		p.Key = core.KeyDir + "/id_" + p.Name
 	}
 
 	if err := p.Validate(); err != nil {
@@ -143,7 +143,7 @@ func renderAdd(e *command.Env, result AddResult) error {
 
 	home := e.Layout.Home
 	fmt.Fprintln(e.Out, ui.Good.Render("added profile ")+ui.Key.Render(result.Profile.Name))
-	fmt.Fprintln(e.Out, ui.Muted.Render("  "+kernel.Tildify(result.Profile.Dir, home)+
+	fmt.Fprintln(e.Out, ui.Muted.Render("  "+core.Tildify(result.Profile.Dir, home)+
 		" → "+result.Profile.User+" <"+result.Profile.Email+">"))
 	for _, line := range summarize(result.Apply, e.Layout) {
 		fmt.Fprintln(e.Out, ui.Muted.Render(line))

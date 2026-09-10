@@ -8,10 +8,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/semirm-dev/ghu/internal/kernel"
-	"github.com/semirm-dev/ghu/internal/kernel/command"
-	"github.com/semirm-dev/ghu/internal/kernel/sys"
-	"github.com/semirm-dev/ghu/internal/ui"
+	"github.com/semirm-dev/ghu/internal/core"
+	"github.com/semirm-dev/ghu/internal/core/command"
+	"github.com/semirm-dev/ghu/internal/core/sys"
+	"github.com/semirm-dev/ghu/internal/core/ui"
 )
 
 // `ghu ssh generate` -- the command, its flags, and everything it prints.
@@ -40,7 +40,7 @@ type GenerateResult struct {
 // Generate creates a profile's keypair. It takes a resolved profile rather than
 // a name and a config: the lookup is the caller's, and passing the whole config
 // to reach one profile would be more than this needs.
-func Generate(ctx context.Context, ssh *sys.SSH, home string, p kernel.Profile, force bool) (GenerateResult, error) {
+func Generate(ctx context.Context, ssh *sys.SSH, home string, p core.Profile, force bool) (GenerateResult, error) {
 	if strings.TrimSpace(p.Key) == "" {
 		// Guessing a path here would write a key the profile does not
 		// reference, which fails silently later at push time.
@@ -51,7 +51,7 @@ func Generate(ctx context.Context, ssh *sys.SSH, home string, p kernel.Profile, 
 
 	// Generated artifacts always hold absolute paths: git expands ~ in some
 	// fields but not in core.sshCommand, so ghu never relies on it.
-	keyPath := kernel.Expand(p.KeyPath(), home)
+	keyPath := core.Expand(p.KeyPath(), home)
 
 	res := GenerateResult{
 		Profile:       p.Name,
@@ -125,7 +125,7 @@ func Run(ctx context.Context, e *command.Env, name string, force bool) error {
 	// that it needs neither the whole config nor a name to search for.
 	p, ok := e.Config.Find(name)
 	if !ok {
-		return kernel.UnknownProfile(e.Config, name)
+		return core.UnknownProfile(e.Config, name)
 	}
 
 	res, err := Generate(ctx, e.SSH, e.Layout.Home, p, force)
@@ -173,8 +173,8 @@ func render(e *command.Env, res GenerateResult) error {
 	fmt.Fprintf(e.Out, "%s\n", ui.Title.Render(
 		fmt.Sprintf("%s ed25519 key for profile %s", verb, res.Profile)))
 	ui.Table(e.Out, [][]string{
-		{"  private", kernel.Tildify(res.KeyPath, home)},
-		{"  public", kernel.Tildify(res.PublicKeyPath, home)},
+		{"  private", core.Tildify(res.KeyPath, home)},
+		{"  public", core.Tildify(res.PublicKeyPath, home)},
 	})
 
 	// Worth saying out loud: a key generated at some other path is a key git
@@ -187,11 +187,11 @@ func render(e *command.Env, res GenerateResult) error {
 	if res.Replaced {
 		if res.DryRun {
 			fmt.Fprintf(e.Out, "\n%s\n", ui.Warn.Render(
-				"--force would replace the existing key at "+kernel.Tildify(res.KeyPath, home)+
+				"--force would replace the existing key at "+core.Tildify(res.KeyPath, home)+
 					"; the old key cannot be recovered."))
 		} else {
 			fmt.Fprintf(e.Out, "\n%s\n", ui.Warn.Render(
-				"replaced the existing key at "+kernel.Tildify(res.KeyPath, home)+
+				"replaced the existing key at "+core.Tildify(res.KeyPath, home)+
 					"; hosts trusting the old key must be given this one."))
 		}
 	}

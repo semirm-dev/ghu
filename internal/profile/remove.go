@@ -8,14 +8,14 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/semirm-dev/ghu/internal/kernel"
-	"github.com/semirm-dev/ghu/internal/kernel/command"
-	"github.com/semirm-dev/ghu/internal/ui"
+	"github.com/semirm-dev/ghu/internal/core"
+	"github.com/semirm-dev/ghu/internal/core/command"
+	"github.com/semirm-dev/ghu/internal/core/ui"
 )
 
 type RemoveResult struct {
-	Profile kernel.Profile     `json:"profile"`
-	Apply   kernel.ApplyResult `json:"apply"`
+	Profile core.Profile     `json:"profile"`
+	Apply   core.ApplyResult `json:"apply"`
 
 	// KeyKept is the key left on disk. ghu never deletes ssh.
 	KeyKept string `json:"key_kept"`
@@ -31,10 +31,10 @@ func (s *Set) Remove(ctx context.Context, name string) (RemoveResult, error) {
 
 	p, ok := s.Config.Find(name)
 	if !ok {
-		return result, kernel.UnknownProfile(s.Config, name)
+		return result, core.UnknownProfile(s.Config, name)
 	}
 
-	kept := make([]kernel.Profile, 0, len(s.Config.Profiles)-1)
+	kept := make([]core.Profile, 0, len(s.Config.Profiles)-1)
 	for _, existing := range s.Config.Profiles {
 		if !strings.EqualFold(existing.Name, name) {
 			kept = append(kept, existing)
@@ -56,7 +56,7 @@ func (s *Set) Remove(ctx context.Context, name string) (RemoveResult, error) {
 	return RemoveResult{
 		Profile: p,
 		Apply:   applied,
-		KeyKept: kernel.Expand(p.KeyPath(), s.Layout.Home),
+		KeyKept: core.Expand(p.KeyPath(), s.Layout.Home),
 	}, nil
 }
 
@@ -90,7 +90,7 @@ func removeCmd(e *command.Env) *cobra.Command {
 				fmt.Fprintln(out, ui.Muted.Render(line))
 			}
 			fmt.Fprintln(out, ui.Muted.Render("  key left in place: "+
-				kernel.Tildify(result.KeyKept, e.Layout.Home)))
+				core.Tildify(result.KeyKept, e.Layout.Home)))
 			return nil
 		},
 	}

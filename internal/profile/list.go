@@ -5,9 +5,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/semirm-dev/ghu/internal/kernel"
-	"github.com/semirm-dev/ghu/internal/kernel/command"
-	"github.com/semirm-dev/ghu/internal/ui"
+	"github.com/semirm-dev/ghu/internal/core"
+	"github.com/semirm-dev/ghu/internal/core/command"
+	"github.com/semirm-dev/ghu/internal/core/ui"
 )
 
 // ListRow carries paths with ~ rather than an absolute home: the config file
@@ -26,18 +26,18 @@ type ListRow struct {
 
 // List reports the configured profiles, marking the one governing the working
 // directory. It cannot fail: an unresolvable directory simply marks nothing.
-func List(cfg kernel.Config, home string) []ListRow {
-	active, matched := kernel.MatchCurrent(cfg, home)
+func List(cfg core.Config, home string) []ListRow {
+	active, matched := core.MatchCurrent(cfg, home)
 
 	rows := make([]ListRow, 0, len(cfg.Profiles))
 	for _, p := range cfg.Profiles {
 		rows = append(rows, ListRow{
 			Name:   p.Name,
-			Dir:    kernel.Tildify(p.Dir, home),
+			Dir:    core.Tildify(p.Dir, home),
 			User:   p.User,
 			Login:  p.Login,
 			Email:  p.Email,
-			Key:    kernel.Tildify(p.KeyPath(), home),
+			Key:    core.Tildify(p.KeyPath(), home),
 			Sign:   p.Sign,
 			Active: matched && p.Name == active.Name,
 		})

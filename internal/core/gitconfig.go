@@ -1,4 +1,4 @@
-package kernel
+package core
 
 // Turning a profile into the git config key/value pairs that represent it:
 // which keys get set, in what order, with what values. No I/O happens here --
@@ -7,7 +7,7 @@ package kernel
 import (
 	"fmt"
 
-	"github.com/semirm-dev/ghu/internal/kernel/sys"
+	"github.com/semirm-dev/ghu/internal/core/sys"
 )
 
 type Entry struct {

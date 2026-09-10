@@ -11,8 +11,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/semirm-dev/ghu/internal/kernel"
-	"github.com/semirm-dev/ghu/internal/kernel/command"
+	"github.com/semirm-dev/ghu/internal/core"
+	"github.com/semirm-dev/ghu/internal/core/command"
 )
 
 type Opts struct {
@@ -70,7 +70,7 @@ func run(ctx context.Context, e *command.Env, opts Opts) error {
 // of a run -- the local checks and the github probe -- hang their methods off
 // it, and neither owns it.)
 
-func targets(cfg kernel.Config, name string) ([]kernel.Profile, error) {
+func targets(cfg core.Config, name string) ([]core.Profile, error) {
 	if name == "" {
 		return cfg.Profiles, nil
 	}
@@ -78,5 +78,5 @@ func targets(cfg kernel.Config, name string) ([]kernel.Profile, error) {
 	if !ok {
 		return nil, fmt.Errorf("profile %q not found in the config", name)
 	}
-	return []kernel.Profile{p}, nil
+	return []core.Profile{p}, nil
 }

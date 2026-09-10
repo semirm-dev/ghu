@@ -4,7 +4,7 @@
 // It is separate from the feature that uses it so that the yaml driver stays
 // out of the business rules -- profiles decides what a valid set of profiles
 // is; store only knows how one is spelled on disk.
-package kernel
+package core
 
 import (
 	_ "embed"
@@ -16,7 +16,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/semirm-dev/ghu/internal/kernel/sys"
+	"github.com/semirm-dev/ghu/internal/core/sys"
 )
 
 // Template is the starter config written when none exists. It is embedded

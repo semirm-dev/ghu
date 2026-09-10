@@ -1,4 +1,4 @@
-package kernel
+package core
 
 // Paths in this file are slash-separated, not filepath-separated, because
 // every one of them ends up inside a git config value: git wants forward

@@ -31,7 +31,7 @@ go tool goimports -local github.com/semirm-dev/ghu -w .
 ```
 
 **There is almost no test suite.** It was removed deliberately while the
-package layout was in flux; `internal/kernel/keypath_test.go` is what came
+package layout was in flux; `internal/core/keypath_test.go` is what came
 back, because key-path handling is the part that differs across platforms and
 fails silently. Write new ones black-box (`package profile_test`) as the rest
 of the codebase was. A single one runs with
@@ -60,12 +60,13 @@ internal/
   ssh/            ghu ssh generate
   doctor/         ghu doctor
   backup/         ghu restore
-  kernel/         the model, ~/.ghu/config.yaml, the layout, directory
+  core/           the model, ~/.ghu/config.yaml, the layout, directory
                   resolution, the git-config contract, the reconciler
     sys/          subprocesses, git config, ssh, atomic writes
     command/      the context a command runs in
+    ui/           the shared lipgloss styles
   cli/            assembles the command tree; owns only `ghu version`
-  tui/  ui/       the profile form, and the shared lipgloss styles
+  tui/            the form that collects a profile
 ```
 
 Everything but `cmd/ghu` is under `internal/`, so nothing outside the module
@@ -80,18 +81,18 @@ assembles them. A feature's whole external surface should be its commands and
 little else.
 
 **No feature imports another feature.** `profile`, `ssh` and `doctor` depend on
-`command`, `kernel`, `sys` and `ui` — never on each other. Where one command
+`core`, `core/command`, `core/sys` and `core/ui` — never on each other. Where one command
 needs another (`ghu profile add --generate` must print what `ghu ssh generate`
 prints), `cli` passes the action in as a `command.Action` callback. Preserve
-this: it is why `kernel/command` exists at all — `Env` cannot live in `cli`, because
+this: it is why `core/command` exists at all — `Env` cannot live in `cli`, because
 features need it and `cli` imports every feature.
 
-**`kernel` holds contracts, not behaviour looking for a home.** `Profile` and
+**`core` holds contracts, not behaviour looking for a home.** `Profile` and
 `Config` are the aggregate every feature reads; `Layout` is where ghu keeps
 files; `Expand`/`Match`/`Ordered` are directory resolution;
 `Entries`/`Includes`/`IncludeKey` are the contract between the reconciler that
 *writes* a profile's git config and doctor that *verifies* it.
-`kernel/config.go` is the only file in the tree that imports a yaml package.
+`core/config.go` is the only file in the tree that imports a yaml package.
 
 **The core returns values and never renders.** Operations hand back structs
 that are already JSON-tagged, because those structs are the `--json` output.
@@ -99,7 +100,7 @@ A caller wanting a profile passes a finished one — collecting it from flags or
 a form is the command's job, which is what keeps `ghu profile add` runnable
 without a terminal.
 
-**One `sys.Runner` (in `kernel/sys`), taken directly — there is no interface over it.** `Git` and
+**One `sys.Runner` (in `core/sys`), taken directly — there is no interface over it.** `Git` and
 `SSH` hold a `*Runner`. If tests need to stub subprocess execution, give
 `Runner` an unexported `exec` func field defaulting to the real one, rather
 than reintroducing a one-implementation interface.
@@ -111,7 +112,7 @@ three structs, and the pair that costs you something is `--force` with
 runner swallow the `ssh-keygen` that would have replaced it.
 
 **ghu never assembles git config syntax.** Every write goes through the
-`git config` CLI in `kernel/sys/git.go`, so git owns quoting, section merging and
+`git config` CLI in `core/sys/git.go`, so git owns quoting, section merging and
 idempotency.
 
 ## Declaration order
@@ -145,7 +146,7 @@ output it prints — `ghu profile add` is entirely in `profile/add.go`, next to
 `Set.Add`.
 
 **Anything two files in a package share moves to that package's main file**
-(`profile.go`, `doctor.go`, `kernel.go`, `cli.go`, `kernel/sys/runner.go`). A command
+(`profile.go`, `doctor.go`, `core.go`, `cli.go`, `core/sys/runner.go`). A command
 file holds only what is specific to that command; nothing reaches sideways into
 another command's file. A main file *using* its parts is fine and expected.
 
@@ -163,7 +164,7 @@ The house style is [these Go guidelines](https://gist.github.com/semirm-dev/d231
 
 ## Domain details that are easy to get wrong
 
-**Keys live in `~/.ssh`, on every platform.** `kernel.KeyDir` is the one
+**Keys live in `~/.ssh`, on every platform.** `core.KeyDir` is the one
 statement of that. A bare `key: private` means `~/.ssh/private`; anything
 outside is refused by `Profile.Validate`. Read a key through `Profile.KeyPath()`,
 never the raw field, or a bare name reaches git unresolved. Both separators are
@@ -179,10 +180,10 @@ reports which account answered instead of judging it.
 
 **`includeIf` order is load-bearing.** git applies entries in file order and the
 *last* match wins, so ghu writes them shortest-directory-first — that is what
-makes a nested profile beat the parent tree containing it. `kernel.Ordered` and
+makes a nested profile beat the parent tree containing it. `core.Ordered` and
 `doctor`'s `includeif-order` check both exist for this.
 
-**Paths in `kernel/paths.go` are slash-separated, not filepath-separated,**
+**Paths in `core/paths.go` are slash-separated, not filepath-separated,**
 because they end up inside git config values and git wants forward slashes in
 `includeIf` patterns on every platform, Windows included.
 

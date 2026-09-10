@@ -13,7 +13,7 @@ import (
 	"charm.land/huh/v2"
 	"github.com/charmbracelet/x/term"
 
-	"github.com/semirm-dev/ghu/internal/kernel"
+	"github.com/semirm-dev/ghu/internal/core"
 )
 
 const (
@@ -45,7 +45,7 @@ func Confirm(title string) bool {
 
 // PromptProfile collects one profile. It gathers values and applies nothing,
 // keeping the interactive and flag-driven paths on the same code below here.
-func PromptProfile(home string, taken []string, seed kernel.Profile) (kernel.Profile, bool, error) {
+func PromptProfile(home string, taken []string, seed core.Profile) (core.Profile, bool, error) {
 	p := seed
 	choice := keyExisting
 	if p.Key == "" {
@@ -62,7 +62,7 @@ func PromptProfile(home string, taken []string, seed kernel.Profile) (kernel.Pro
 
 			huh.NewInput().
 				Title("Directory").
-				Description("Repositories under this tree get this kernel.").
+				Description("Repositories under this tree use this account.").
 				Value(&p.Dir).
 				Validate(validateDir(home)),
 
@@ -108,9 +108,9 @@ func PromptProfile(home string, taken []string, seed kernel.Profile) (kernel.Pro
 
 	if err := form.Run(); err != nil {
 		if err == huh.ErrUserAborted {
-			return kernel.Profile{}, false, nil
+			return core.Profile{}, false, nil
 		}
-		return kernel.Profile{}, false, err
+		return core.Profile{}, false, err
 	}
 
 	p.Name = strings.TrimSpace(p.Name)
@@ -120,7 +120,7 @@ func PromptProfile(home string, taken []string, seed kernel.Profile) (kernel.Pro
 	p.Key = strings.TrimSpace(p.Key)
 
 	if p.Key == "" {
-		p.Key = kernel.KeyDir + "/id_" + p.Name
+		p.Key = core.KeyDir + "/id_" + p.Name
 	}
 	return p, choice == keyGenerate, nil
 }
@@ -128,7 +128,7 @@ func PromptProfile(home string, taken []string, seed kernel.Profile) (kernel.Pro
 func validateName(taken []string, allow string) func(string) error {
 	return func(s string) error {
 		s = strings.TrimSpace(s)
-		if err := (kernel.Profile{Name: s, Dir: "x", User: "x", Email: "x@y", Key: "x"}).Validate(); err != nil {
+		if err := (core.Profile{Name: s, Dir: "x", User: "x", Email: "x@y", Key: "x"}).Validate(); err != nil {
 			return err
 		}
 		for _, t := range taken {
@@ -142,7 +142,7 @@ func validateName(taken []string, allow string) func(string) error {
 
 // validateDir insists the directory exists: a profile pointing at a missing
 // path never matches, and fails silently -- commits just get the wrong
-// kernel.
+// account.
 func validateDir(home string) func(string) error {
 	return func(s string) error {
 		s = strings.TrimSpace(s)
@@ -150,7 +150,7 @@ func validateDir(home string) func(string) error {
 			return errors.New("directory is required")
 		}
 
-		abs := kernel.Expand(s, home)
+		abs := core.Expand(s, home)
 		info, err := os.Stat(abs)
 		if os.IsNotExist(err) {
 			return fmt.Errorf("%s does not exist", abs)

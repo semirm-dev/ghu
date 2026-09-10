@@ -11,9 +11,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/semirm-dev/ghu/internal/kernel"
-	"github.com/semirm-dev/ghu/internal/kernel/command"
-	"github.com/semirm-dev/ghu/internal/kernel/sys"
+	"github.com/semirm-dev/ghu/internal/core"
+	"github.com/semirm-dev/ghu/internal/core/command"
+	"github.com/semirm-dev/ghu/internal/core/sys"
 	"github.com/semirm-dev/ghu/internal/tui"
 )
 
@@ -28,8 +28,8 @@ const EmailKey = "user.email"
 // lives in, and the reconciler that follows a change. List reads the same
 // config without one.
 type Set struct {
-	Layout kernel.Layout
-	Config kernel.Config
+	Layout core.Layout
+	Config core.Config
 
 	git *sys.Git
 }
@@ -37,8 +37,8 @@ type Set struct {
 // Open loads the profile set from a home directory. A config that fails to
 // load is fatal rather than skipped: reconciling from one ghu could not parse
 // would rewrite ~/.gitconfig from an empty profile list.
-func Open(l kernel.Layout, git *sys.Git) (*Set, error) {
-	cfg, err := kernel.LoadConfig(l.ConfigFile())
+func Open(l core.Layout, git *sys.Git) (*Set, error) {
+	cfg, err := core.LoadConfig(l.ConfigFile())
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +86,7 @@ func Command(e *command.Env, generate command.Action) *cobra.Command {
 
 // Reload re-reads the config from disk, after an operation changed it.
 func (s *Set) Reload() error {
-	cfg, err := kernel.LoadConfig(s.Layout.ConfigFile())
+	cfg, err := core.LoadConfig(s.Layout.ConfigFile())
 	if err != nil {
 		return err
 	}
@@ -95,12 +95,12 @@ func (s *Set) Reload() error {
 }
 
 func (s *Set) Save() error {
-	return kernel.SaveConfig(s.Layout.ConfigFile(), s.Config)
+	return core.SaveConfig(s.Layout.ConfigFile(), s.Config)
 }
 
 // Apply reconciles ~/.ghu and ~/.gitconfig to match the loaded config.
-func (s *Set) Apply(ctx context.Context) (kernel.ApplyResult, error) {
-	return kernel.Reconciler{Layout: s.Layout, Git: s.git}.Apply(ctx, s.Config)
+func (s *Set) Apply(ctx context.Context) (core.ApplyResult, error) {
+	return core.Reconciler{Layout: s.Layout, Git: s.git}.Apply(ctx, s.Config)
 }
 
 // dryRun reports whether this set's writes are suppressed. The runner behind
@@ -112,7 +112,7 @@ func (s *Set) dryRun() bool { return s.git.DryRun() }
 // same underlying change look like three different ones.
 
 // summarize renders an ApplyResult for a human.
-func summarize(result kernel.ApplyResult, l kernel.Layout) []string {
+func summarize(result core.ApplyResult, l core.Layout) []string {
 	home := l.Home
 	var lines []string
 
@@ -126,17 +126,17 @@ func summarize(result kernel.ApplyResult, l kernel.Layout) []string {
 	}
 	if n := len(result.IncludesWritten); n > 0 {
 		lines = append(lines, fmt.Sprintf("wrote %d includeIf %s to %s",
-			n, plural(n, "entry", "entries"), kernel.Tildify(l.GitConfig(), home)))
+			n, plural(n, "entry", "entries"), core.Tildify(l.GitConfig(), home)))
 	}
 	// The first run is worth calling out: that copy is the only pristine
 	// record of what ~/.gitconfig looked like before ghu existed.
 	switch {
 	case result.Backup.Established:
 		lines = append(lines, "preserved your original ~/.gitconfig at "+
-			kernel.Tildify(result.Backup.Pivot, home)+" (kept permanently)")
+			core.Tildify(result.Backup.Pivot, home)+" (kept permanently)")
 	case result.Backup.Snapshot != "":
 		lines = append(lines, "backed up ~/.gitconfig to "+
-			kernel.Tildify(result.Backup.Snapshot, home))
+			core.Tildify(result.Backup.Snapshot, home))
 	}
 	return lines
 }
@@ -151,7 +151,7 @@ func plural(n int, one, many string) string {
 // addInteractively collects a profile from a form and adds it, for `ghu init`
 // when it finds no profiles and there is a terminal to ask on.
 func addInteractively(ctx context.Context, e *command.Env, generate command.Action) error {
-	p, wantsKey, err := tui.PromptProfile(e.Layout.Home, e.Config.Names(), kernel.Profile{})
+	p, wantsKey, err := tui.PromptProfile(e.Layout.Home, e.Config.Names(), core.Profile{})
 	if err != nil {
 		return err
 	}
@@ -194,5 +194,5 @@ func tildifyOrigin(origin, home string) string {
 	if origin == "" || !strings.HasPrefix(origin, "/") {
 		return origin
 	}
-	return kernel.Tildify(origin, home)
+	return core.Tildify(origin, home)
 }

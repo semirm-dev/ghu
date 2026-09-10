@@ -8,8 +8,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/semirm-dev/ghu/internal/kernel"
-	"github.com/semirm-dev/ghu/internal/kernel/sys"
+	"github.com/semirm-dev/ghu/internal/core"
+	"github.com/semirm-dev/ghu/internal/core/sys"
 )
 
 // The online half of doctor: asking GitHub what identity a profile's key
@@ -33,11 +33,11 @@ const MaxConcurrentProbes = 4
 // bundle holding the run: nothing outside this package builds one, and a run
 // is the only thing a checker ever does.
 type checker struct {
-	layout kernel.Layout
+	layout core.Layout
 	git    *sys.Git
 	ssh    *sys.SSH
 
-	cfg   kernel.Config
+	cfg   core.Config
 	owned []entry
 }
 
@@ -108,7 +108,7 @@ func (e entry) matchesProfile(name string) bool {
 }
 
 // checkProfile runs every check that needs no network.
-func (c checker) checkProfile(p kernel.Profile) []Finding {
+func (c checker) checkProfile(p core.Profile) []Finding {
 	var out []Finding
 	add := func(check string, sev Severity, format string, args ...any) {
 		out = append(out, Finding{
@@ -128,7 +128,7 @@ func (c checker) checkProfile(p kernel.Profile) []Finding {
 
 	// A profile pointing at a directory that was moved or deleted matches
 	// nothing, silently -- git simply never applies the include.
-	dir := kernel.Expand(p.Dir, home)
+	dir := core.Expand(p.Dir, home)
 	switch info, err := os.Stat(dir); {
 	case os.IsNotExist(err):
 		add(CheckDir, Error, "directory %s does not exist, so nothing will ever match this profile", dir)
@@ -140,7 +140,7 @@ func (c checker) checkProfile(p kernel.Profile) []Finding {
 		add(CheckDir, OK, "directory %s exists", dir)
 	}
 
-	keyPath := kernel.Expand(p.KeyPath(), home)
+	keyPath := core.Expand(p.KeyPath(), home)
 	if strings.HasSuffix(keyPath, sys.PublicKeySuffix) {
 		// Checked as a private key this yields two findings sharing one cause:
 		// 0644 permissions, which are right for a public key, and a missing
@@ -168,7 +168,7 @@ func (c checker) checkProfile(p kernel.Profile) []Finding {
 	return out
 }
 
-func (c checker) checkInclude(p kernel.Profile) []Finding {
+func (c checker) checkInclude(p core.Profile) []Finding {
 	var out []Finding
 	add := func(check string, sev Severity, format string, args ...any) {
 		out = append(out, Finding{
@@ -179,7 +179,7 @@ func (c checker) checkInclude(p kernel.Profile) []Finding {
 		})
 	}
 
-	wantKey := kernel.IncludeKey(p.Dir, c.layout.Home)
+	wantKey := core.IncludeKey(p.Dir, c.layout.Home)
 	wantValue := c.layout.ProfileFile(p.Name)
 
 	var mine *entry
@@ -207,7 +207,7 @@ func (c checker) checkInclude(p kernel.Profile) []Finding {
 		// directory: repositories in the tree get the wrong identity.
 		add(CheckInclude, Error,
 			"includeIf entry for %s points at %s, expected %s",
-			kernel.Expand(p.Dir, c.layout.Home), byKey.value, wantValue)
+			core.Expand(p.Dir, c.layout.Home), byKey.value, wantValue)
 		return out
 	case !strings.EqualFold(mine.key, wantKey):
 		// The profile's dir was changed in the config but ~/.gitconfig was
@@ -218,7 +218,7 @@ func (c checker) checkInclude(p kernel.Profile) []Finding {
 	case mine.value != wantValue:
 		add(CheckInclude, Error,
 			"includeIf entry for %s points at %s, expected %s",
-			kernel.Expand(p.Dir, c.layout.Home), mine.value, wantValue)
+			core.Expand(p.Dir, c.layout.Home), mine.value, wantValue)
 	default:
 		add(CheckInclude, OK, "includeIf entry matches %s", wantValue)
 	}
@@ -231,7 +231,7 @@ func (c checker) checkInclude(p kernel.Profile) []Finding {
 // entries must run shortest directory first. Get it backwards and a nested
 // profile is silently overridden by the parent tree that contains it: git
 // resolves without complaint, and commits land under the wrong account.
-func (c checker) orderFinding(p kernel.Profile, mine entry) Finding {
+func (c checker) orderFinding(p core.Profile, mine entry) Finding {
 	finding := Finding{Profile: p.Name, Check: CheckIncludeOrder}
 
 	want := c.expectedOrder()
@@ -255,7 +255,7 @@ func (c checker) orderFinding(p kernel.Profile, mine entry) Finding {
 		finding.Severity = Error
 		finding.Message = fmt.Sprintf(
 			"includeIf entry is applied before %q, whose tree %s contains %s; git's last match wins, so this profile silently loses to %q",
-			shadower.Name, kernel.Expand(shadower.Dir, c.layout.Home), kernel.Expand(p.Dir, c.layout.Home), shadower.Name)
+			shadower.Name, core.Expand(shadower.Dir, c.layout.Home), core.Expand(p.Dir, c.layout.Home), shadower.Name)
 		return finding
 	}
 
@@ -275,7 +275,7 @@ func (c checker) expectedOrder() []string {
 	}
 
 	var out []string
-	for _, inc := range kernel.Includes(c.cfg, c.layout.Home, c.layout.ProfileFile) {
+	for _, inc := range core.Includes(c.cfg, c.layout.Home, c.layout.ProfileFile) {
 		if present[strings.ToLower(inc.Profile)] {
 			out = append(out, inc.Profile)
 		}
@@ -285,7 +285,7 @@ func (c checker) expectedOrder() []string {
 
 // shadowedBy returns the profile that overrides p, if any: one whose tree
 // contains p's directory and whose includeIf entry is applied later.
-func (c checker) shadowedBy(p kernel.Profile, mine entry) (kernel.Profile, bool) {
+func (c checker) shadowedBy(p core.Profile, mine entry) (core.Profile, bool) {
 	for _, e := range c.owned {
 		if e.index <= mine.index || e.matchesProfile(p.Name) {
 			continue
@@ -296,11 +296,11 @@ func (c checker) shadowedBy(p kernel.Profile, mine entry) (kernel.Profile, bool)
 		}
 		// Match against a single candidate answers "is p.Dir inside other.Dir",
 		// using the same containment rule git's gitdir/i patterns follow.
-		if _, contains := kernel.Match([]kernel.Profile{other}, p.Dir, c.layout.Home); contains {
+		if _, contains := core.Match([]core.Profile{other}, p.Dir, c.layout.Home); contains {
 			return other, true
 		}
 	}
-	return kernel.Profile{}, false
+	return core.Profile{}, false
 }
 
 // Orphaned entries -- ghu-owned includeIf entries whose profile is gone from
@@ -340,7 +340,7 @@ func (c checker) probeSkipReason(opts Opts) string {
 // network-bound and independent. Results stay indexed by profile so the report
 // keeps config order regardless of which probe answers first, and each
 // goroutine owns one index, so no lock is needed to collect them.
-func (c checker) probeAll(ctx context.Context, targets []kernel.Profile, skip bool) []probe {
+func (c checker) probeAll(ctx context.Context, targets []core.Profile, skip bool) []probe {
 	results := make([]probe, len(targets))
 	if skip {
 		return results
@@ -351,7 +351,7 @@ func (c checker) probeAll(ctx context.Context, targets []kernel.Profile, skip bo
 
 	var wg sync.WaitGroup
 	for i, p := range targets {
-		keyPath := kernel.Expand(p.KeyPath(), c.layout.Home)
+		keyPath := core.Expand(p.KeyPath(), c.layout.Home)
 		// Probing with a key that is not there only produces a second, less
 		// useful report of the same missing file.
 		if _, err := os.Stat(keyPath); err != nil {
@@ -384,13 +384,13 @@ func (c checker) probeAll(ctx context.Context, targets []kernel.Profile, skip bo
 // The probe is the only check that proves a key belongs to the account the
 // profile claims, so a mismatch is the worst thing doctor can find: git is
 // configured, resolving, and pushing as somebody else.
-func (c checker) probeFinding(p kernel.Profile, result probe) Finding {
+func (c checker) probeFinding(p core.Profile, result probe) Finding {
 	finding := Finding{Profile: p.Name, Check: CheckProbe}
 
 	switch {
 	case result.err != nil:
 		finding.Severity = Error
-		finding.Message = fmt.Sprintf("github.com rejected %s: %s", kernel.Expand(p.KeyPath(), c.layout.Home), result.err)
+		finding.Message = fmt.Sprintf("github.com rejected %s: %s", core.Expand(p.KeyPath(), c.layout.Home), result.err)
 	case !p.ClaimsLogin():
 		// Without a login there is nothing to compare against, so report what
 		// answered rather than inventing a claim from user.name -- that is a
@@ -404,7 +404,7 @@ func (c checker) probeFinding(p kernel.Profile, result probe) Finding {
 		finding.Severity = Error
 		finding.Message = fmt.Sprintf(
 			"github.com answered as %q but this profile claims %q; pushes from %s would be attributed to %q",
-			result.login, p.Login, kernel.Expand(p.Dir, c.layout.Home), result.login)
+			result.login, p.Login, core.Expand(p.Dir, c.layout.Home), result.login)
 	default:
 		finding.Severity = OK
 		finding.Message = fmt.Sprintf("github.com answered as %q", result.login)
@@ -414,7 +414,7 @@ func (c checker) probeFinding(p kernel.Profile, result probe) Finding {
 
 // ownedEntries keeps only the includeIf entries pointing into ~/.ghu/profiles,
 // so that entries the user wrote by hand are never reported on.
-func ownedEntries(l kernel.Layout, all []sys.KeyValue) []entry {
+func ownedEntries(l core.Layout, all []sys.KeyValue) []entry {
 	var out []entry
 	for _, kv := range all {
 		if !l.OwnsProfilePath(kv.Value) {
@@ -423,7 +423,7 @@ func ownedEntries(l kernel.Layout, all []sys.KeyValue) []entry {
 		out = append(out, entry{
 			key:         kv.Key,
 			value:       kv.Value,
-			profileName: strings.TrimSuffix(filepath.Base(kv.Value), kernel.ProfileFileSuffix),
+			profileName: strings.TrimSuffix(filepath.Base(kv.Value), core.ProfileFileSuffix),
 			index:       len(out),
 		})
 	}
@@ -432,7 +432,7 @@ func ownedEntries(l kernel.Layout, all []sys.KeyValue) []entry {
 
 // A missing or world-readable private key stops ssh outright; a missing public
 // key only matters when the profile signs commits with it.
-func keySeverity(problem sys.KeyProblem, p kernel.Profile) Severity {
+func keySeverity(problem sys.KeyProblem, p core.Profile) Severity {
 	if strings.HasSuffix(problem.Path, sys.PublicKeySuffix) && !p.Sign {
 		return Warning
 	}

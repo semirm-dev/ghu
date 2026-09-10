@@ -1,10 +1,10 @@
-package kernel_test
+package core_test
 
 import (
 	"strings"
 	"testing"
 
-	"github.com/semirm-dev/ghu/internal/kernel"
+	"github.com/semirm-dev/ghu/internal/core"
 )
 
 // Keys live in ~/.ssh on every platform ghu ships for: OpenSSH on Windows uses
@@ -29,16 +29,16 @@ func TestKeyPathIsTheSameEverywhere(t *testing.T) {
 		want := home + "/.ssh/private"
 
 		for _, in := range written {
-			p := kernel.Profile{Name: "w", Dir: "~/code", User: "u", Email: "u@x.com", Key: in}
+			p := core.Profile{Name: "w", Dir: "~/code", User: "u", Email: "u@x.com", Key: in}
 			if err := p.Validate(); err != nil {
 				t.Fatalf("%s: %q was rejected: %v", osName, in, err)
 			}
 
-			got := kernel.Expand(p.KeyPath(), home)
+			got := core.Expand(p.KeyPath(), home)
 			if got != want {
 				t.Errorf("%s: %q resolved to %q, want %q", osName, in, got, want)
 			}
-			if cmd := kernel.SSHCommand(got); strings.ContainsRune(cmd, '\\') {
+			if cmd := core.SSHCommand(got); strings.ContainsRune(cmd, '\\') {
 				t.Errorf("%s: %q produced a backslash in core.sshCommand: %s", osName, in, cmd)
 			}
 		}
@@ -56,14 +56,14 @@ func TestKeyOutsideSSHDirIsRefused(t *testing.T) {
 		`C:\keys\id_work`,
 		"../id_work",
 	} {
-		p := kernel.Profile{Name: "w", Dir: "~/code", User: "u", Email: "u@x.com", Key: key}
+		p := core.Profile{Name: "w", Dir: "~/code", User: "u", Email: "u@x.com", Key: key}
 
 		err := p.Validate()
 		if err == nil {
 			t.Errorf("%q was accepted, expected a refusal", key)
 			continue
 		}
-		if !strings.Contains(err.Error(), kernel.KeyDir) {
+		if !strings.Contains(err.Error(), core.KeyDir) {
 			t.Errorf("%q: error does not say where keys belong: %v", key, err)
 		}
 	}

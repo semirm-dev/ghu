@@ -1,4 +1,4 @@
-package kernel
+package core
 
 // The ~/.ghu directory: where the config, the generated profile files and the
 // backups live, and how ghu preserves the one file it did not create,
@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/semirm-dev/ghu/internal/kernel/sys"
+	"github.com/semirm-dev/ghu/internal/core/sys"
 )
 
 const BackupsKept = 10

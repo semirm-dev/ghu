@@ -6,9 +6,9 @@
 // in ssh -- and they all need the same handful of things, so that handful lives
 // here rather than in the package that assembles the tree.
 //
-// It sits under kernel, alongside sys, because it is the other thing every
-// feature needs and nothing in the domain needs back: kernel does not import
-// it, cli imports every feature, and no feature imports cli. That is the one
+// It sits under core, alongside sys, because it is the other thing every
+// feature needs and nothing in the domain needs back: core does not import it,
+// cli imports every feature, and no feature imports cli. That is the one
 // direction that works.
 package command
 
@@ -17,8 +17,8 @@ import (
 	"encoding/json"
 	"io"
 
-	"github.com/semirm-dev/ghu/internal/kernel"
-	"github.com/semirm-dev/ghu/internal/kernel/sys"
+	"github.com/semirm-dev/ghu/internal/core"
+	"github.com/semirm-dev/ghu/internal/core/sys"
 )
 
 // Action is a command one feature exposes to another -- `ghu profile add
@@ -30,8 +30,8 @@ type Action func(ctx context.Context, name string) error
 // object: the feature packages each take only what they need, and the commands
 // assemble them from here.
 type Env struct {
-	Layout kernel.Layout
-	Config kernel.Config
+	Layout core.Layout
+	Config core.Config
 	Git    *sys.Git
 	SSH    *sys.SSH
 
