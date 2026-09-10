@@ -1,0 +1,10 @@
+# ghu profiles.
+#
+# Each profile binds a GitHub identity to a directory tree. Repositories under
+# `dir` get that identity automatically, via includeIf entries ghu writes into
+# ~/.gitconfig. Repositories elsewhere can opt in with `ghu profile use <name>`.
+#
+# Run `ghu profile add` to append a profile, or edit this file and run `ghu init` to
+# reconcile.
+version: 2
+profiles: []

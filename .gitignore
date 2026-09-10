@@ -1,0 +1,27 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+# Build output
+/.build/
+# The root-level binary from a bare `go build ./cmd/ghu`.
+/ghu
+
+# Key material. ghu generates ssh keys, and running it from a checkout can drop
+# one here; none of it belongs in the repository.
+id_*
+*.pub
+*.pem
+/private
