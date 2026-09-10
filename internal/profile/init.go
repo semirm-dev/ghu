@@ -13,7 +13,6 @@ import (
 	"github.com/semirm-dev/ghu/internal/core"
 	"github.com/semirm-dev/ghu/internal/core/command"
 	"github.com/semirm-dev/ghu/internal/core/ui"
-	"github.com/semirm-dev/ghu/internal/tui"
 )
 
 type InitResult struct {
@@ -97,7 +96,7 @@ func (s *Set) init(ctx context.Context, reset bool) (InitResult, error) {
 // confirmReset asks before forgetting profiles, because nothing else ghu does
 // discards configuration you wrote.
 func confirmReset(e *command.Env, names []string, nonInteractive bool) error {
-	if nonInteractive || !tui.Interactive() {
+	if nonInteractive || !ui.Interactive() {
 		// A script that asked for --reset meant it; there is nobody to ask.
 		return nil
 	}
@@ -108,7 +107,7 @@ func confirmReset(e *command.Env, names []string, nonInteractive bool) error {
 	fmt.Fprintln(e.Out, ui.Muted.Render(
 		"Backups and ssh keys are kept, and the config is saved alongside itself first."))
 
-	if !tui.Confirm("Forget them?") {
+	if !ui.Confirm("Forget them?") {
 		return errors.New("cancelled")
 	}
 	return nil
@@ -163,7 +162,7 @@ func initCmd(e *command.Env, generate command.Action) *cobra.Command {
 
 			// An empty config after init is a valid outcome; offering to fill
 			// it is an adapter's choice, not the core's.
-			if len(s.Config.Profiles) == 0 && !nonInteractive && tui.Interactive() {
+			if len(s.Config.Profiles) == 0 && !nonInteractive && ui.Interactive() {
 				if err := addInteractively(ctx, e, generate); err != nil {
 					return err
 				}

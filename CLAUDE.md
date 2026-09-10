@@ -64,15 +64,21 @@ internal/
                   resolution, the git-config contract, the reconciler
     sys/          subprocesses, git config, ssh, atomic writes
     command/      the context a command runs in
-    ui/           the shared lipgloss styles
+    ui/           the shared styles, and asking the person at the keyboard
   cli/            assembles the command tree; owns only `ghu version`
-  tui/            the form that collects a profile
 ```
 
 Everything but `cmd/ghu` is under `internal/`, so nothing outside the module
 can import it. ghu ships a binary, not a library.
 
 ### The rules that matter
+
+**A form that collects a domain type belongs to that domain.** `core/ui` holds
+the styles and the generic prompts (`Interactive`, `Confirm`). The profile form
+lives in `profile/form.go`, because it returns a `core.Profile` and its
+validators are the rules for a profile's name, directory and email. It was a
+`tui` package once, which made `profile` import something that looked like a UI
+layer when it was really importing its own form.
 
 **A feature owns its commands.** `ghu profile add` is declared in
 `internal/profile/`, not in `cli/`. Each feature package exports its cobra

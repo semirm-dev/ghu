@@ -14,7 +14,6 @@ import (
 	"github.com/semirm-dev/ghu/internal/core"
 	"github.com/semirm-dev/ghu/internal/core/command"
 	"github.com/semirm-dev/ghu/internal/core/sys"
-	"github.com/semirm-dev/ghu/internal/tui"
 )
 
 // EmailKey is the key GitHub attributes commits by, and therefore the one the
@@ -151,7 +150,7 @@ func plural(n int, one, many string) string {
 // addInteractively collects a profile from a form and adds it, for `ghu init`
 // when it finds no profiles and there is a terminal to ask on.
 func addInteractively(ctx context.Context, e *command.Env, generate command.Action) error {
-	p, wantsKey, err := tui.PromptProfile(e.Layout.Home, e.Config.Names(), core.Profile{})
+	p, wantsKey, err := promptProfile(e.Layout.Home, e.Config.Names(), core.Profile{})
 	if err != nil {
 		return err
 	}

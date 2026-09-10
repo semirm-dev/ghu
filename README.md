@@ -386,9 +386,8 @@ internal/
                   resolution, the git-config contract, the reconciler
     sys/          subprocesses, git config, ssh, atomic writes
     command/      the context a command runs in
-    ui/           the shared lipgloss styles
+    ui/           the shared styles, and asking the person at the keyboard
   cli/            assembles the command tree; owns only `ghu version`
-  tui/            the form that collects a profile
 ```
 
 The core returns values and never renders: operations hand back structs that

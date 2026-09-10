@@ -10,7 +10,6 @@ import (
 	"github.com/semirm-dev/ghu/internal/core"
 	"github.com/semirm-dev/ghu/internal/core/command"
 	"github.com/semirm-dev/ghu/internal/core/ui"
-	"github.com/semirm-dev/ghu/internal/tui"
 )
 
 type AddOpts struct {
@@ -91,7 +90,7 @@ func addCmd(e *command.Env, generate command.Action) *cobra.Command {
 			// help promises. Refusing without a terminal is what keeps a
 			// scripted `ghu profile add` from hanging on a prompt.
 			if opts.Profile.Name == "" {
-				if !tui.Interactive() {
+				if !ui.Interactive() {
 					return errors.New(
 						"nothing to add: pass --name, --dir, --user and --email, " +
 							"or run this where ghu can ask you")

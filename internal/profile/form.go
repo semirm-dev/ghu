@@ -1,8 +1,10 @@
-// Package tui is the form ghu puts on screen to collect a profile, and the
-// check for whether it can put anything on screen at all.
+package profile
+
+// The form `ghu profile add` puts on screen when it is given no flags.
 //
-// It depends on the model and nothing else, so any feature can prompt with it.
-package tui
+// It lives here rather than in a general-purpose ui package because there is
+// nothing general about it: it collects a core.Profile, and its validators are
+// the rules for a profile's name, directory and email.
 
 import (
 	"errors"
@@ -11,7 +13,6 @@ import (
 	"strings"
 
 	"charm.land/huh/v2"
-	"github.com/charmbracelet/x/term"
 
 	"github.com/semirm-dev/ghu/internal/core"
 )
@@ -23,29 +24,9 @@ const (
 
 type keyChoice int
 
-// Interactive reports whether ghu can put a form on the screen. A form written
-// to a pipe waits forever for a keystroke that never comes, which is how a CLI
-// hangs a CI job.
-func Interactive() bool {
-	return term.IsTerminal(os.Stdout.Fd()) && term.IsTerminal(os.Stdin.Fd())
-}
-
-// Confirm asks a yes/no question, defaulting to no. Callers check Interactive
-// first: a confirmation written to a pipe waits forever for a keystroke that
-// never comes.
-func Confirm(title string) bool {
-	answer := false
-	err := huh.NewForm(
-		huh.NewGroup(
-			huh.NewConfirm().Title(title).Affirmative("Yes").Negative("No").Value(&answer),
-		),
-	).Run()
-	return err == nil && answer
-}
-
 // PromptProfile collects one profile. It gathers values and applies nothing,
 // keeping the interactive and flag-driven paths on the same code below here.
-func PromptProfile(home string, taken []string, seed core.Profile) (core.Profile, bool, error) {
+func promptProfile(home string, taken []string, seed core.Profile) (core.Profile, bool, error) {
 	p := seed
 	choice := keyExisting
 	if p.Key == "" {
