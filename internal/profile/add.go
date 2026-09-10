@@ -39,7 +39,7 @@ func (s *Set) Add(ctx context.Context, opts AddOpts) (AddResult, error) {
 	generate := opts.Generate
 
 	if p.Key == "" {
-		p.Key = "~/.ssh/id_" + p.Name
+		p.Key = kernel.KeyDir + "/id_" + p.Name
 	}
 
 	if err := p.Validate(); err != nil {
@@ -128,7 +128,7 @@ func addCmd(e *command.Env, generate command.Action) *cobra.Command {
 	cmd.Flags().StringVar(&opts.Profile.Login, "login", "",
 		"Your GitHub account name, so `ghu doctor` can check the key matches")
 	cmd.Flags().StringVar(&opts.Profile.Email, "email", "", "Email GitHub attributes your commits to")
-	cmd.Flags().StringVar(&opts.Profile.Key, "key", "", "Private key to push with (default ~/.ssh/id_<name>)")
+	cmd.Flags().StringVar(&opts.Profile.Key, "key", "", "Private key in ~/.ssh, by name or path (default id_<name>)")
 	cmd.Flags().BoolVar(&opts.Profile.Sign, "sign", false, "Sign commits with this key, so GitHub marks them Verified")
 	cmd.Flags().BoolVar(&opts.Generate, "generate", false,
 		"Also create the SSH key now, and print it to add to GitHub")

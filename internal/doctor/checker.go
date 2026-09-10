@@ -140,7 +140,7 @@ func (c checker) checkProfile(p kernel.Profile) []Finding {
 		add(CheckDir, OK, "directory %s exists", dir)
 	}
 
-	keyPath := kernel.Expand(p.Key, home)
+	keyPath := kernel.Expand(p.KeyPath(), home)
 	if strings.HasSuffix(keyPath, sys.PublicKeySuffix) {
 		// Checked as a private key this yields two findings sharing one cause:
 		// 0644 permissions, which are right for a public key, and a missing
@@ -351,7 +351,7 @@ func (c checker) probeAll(ctx context.Context, targets []kernel.Profile, skip bo
 
 	var wg sync.WaitGroup
 	for i, p := range targets {
-		keyPath := kernel.Expand(p.Key, c.layout.Home)
+		keyPath := kernel.Expand(p.KeyPath(), c.layout.Home)
 		// Probing with a key that is not there only produces a second, less
 		// useful report of the same missing file.
 		if _, err := os.Stat(keyPath); err != nil {
@@ -390,7 +390,7 @@ func (c checker) probeFinding(p kernel.Profile, result probe) Finding {
 	switch {
 	case result.err != nil:
 		finding.Severity = Error
-		finding.Message = fmt.Sprintf("github.com rejected %s: %s", kernel.Expand(p.Key, c.layout.Home), result.err)
+		finding.Message = fmt.Sprintf("github.com rejected %s: %s", kernel.Expand(p.KeyPath(), c.layout.Home), result.err)
 	case !p.ClaimsLogin():
 		// Without a login there is nothing to compare against, so report what
 		// answered rather than inventing a claim from user.name -- that is a

@@ -37,7 +37,7 @@ func List(cfg kernel.Config, home string) []ListRow {
 			User:   p.User,
 			Login:  p.Login,
 			Email:  p.Email,
-			Key:    kernel.Tildify(p.Key, home),
+			Key:    kernel.Tildify(p.KeyPath(), home),
 			Sign:   p.Sign,
 			Active: matched && p.Name == active.Name,
 		})

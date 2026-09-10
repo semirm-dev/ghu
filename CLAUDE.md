@@ -30,10 +30,11 @@ separate install. To fix grouping rather than just report it:
 go tool goimports -local github.com/semirm-dev/ghu -w .
 ```
 
-**There are currently no tests.** They were removed deliberately while the
-package layout was in flux, so `make test` fails with an explanation rather
-than passing over an empty tree. Write them black-box (`package profile_test`)
-as the rest of the codebase was. A single one runs with
+**There is almost no test suite.** It was removed deliberately while the
+package layout was in flux; `internal/kernel/keypath_test.go` is what came
+back, because key-path handling is the part that differs across platforms and
+fails silently. Write new ones black-box (`package profile_test`) as the rest
+of the codebase was. A single one runs with
 `go test ./internal/profile/ -run TestName -count=1`.
 
 To stub subprocess execution, give `sys.Runner` an unexported `exec` func field
@@ -161,6 +162,13 @@ wherever there are no format verbs.
 The house style is [these Go guidelines](https://gist.github.com/semirm-dev/d2317ef1ef3c822935b42a2b5662cea4).
 
 ## Domain details that are easy to get wrong
+
+**Keys live in `~/.ssh`, on every platform.** `kernel.KeyDir` is the one
+statement of that. A bare `key: private` means `~/.ssh/private`; anything
+outside is refused by `Profile.Validate`. Read a key through `Profile.KeyPath()`,
+never the raw field, or a bare name reaches git unresolved. Both separators are
+treated as separators regardless of host, because config.yaml is portable and a
+key written on Windows must mean the same on Linux.
 
 **`user` and `login` are different fields and must stay that way.** `user` is
 git's `user.name`, a display name on commits. `login` is the GitHub account,

@@ -172,7 +172,7 @@ profiles:
       user: Your Name
       login: acme-you
       email: you@acme.example
-      key: ~/.ssh/id_acme
+      key: id_acme          # a bare name means ~/.ssh/id_acme
       sign: true
     - name: personal
       dir: ~/code
@@ -211,6 +211,13 @@ And in `~/.gitconfig`:
 ```
 
 Three details in there are deliberate.
+
+**Keys live in `~/.ssh`.** That is where OpenSSH looks on Linux, macOS and
+Windows alike — Windows OpenSSH uses `%USERPROFILE%\.ssh` — so `ghu` takes a
+bare `key: private` to mean `~/.ssh/private`, and refuses a key anywhere else.
+A key outside it is either an absolute path that will not survive being moved
+between machines, or a relative one that resolves against whatever directory
+you ran from.
 
 **Every path is absolute.** Git expands `~` in `include.path` and in `includeIf`
 patterns, but `core.sshCommand` only reaches a shell when it contains shell
@@ -358,9 +365,9 @@ make release     # cross-compile bin/ for every platform
 make clean       # remove build output
 ```
 
-There are no tests at the moment: they were removed while the package layout
-was being reworked, so `make test` fails with an explanation rather than
-passing over an empty tree.
+The test suite was removed while the package layout was being reworked; what
+is left covers key-path handling, which is the part that differs between Linux,
+macOS and Windows and fails silently when it is wrong.
 
 `ghu` is organised by feature. Each package under `internal/` owns the commands
 that drive it -- `ghu profile add` is declared in `internal/profile/`, not in

@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"charm.land/huh/v2"
@@ -121,7 +120,7 @@ func PromptProfile(home string, taken []string, seed kernel.Profile) (kernel.Pro
 	p.Key = strings.TrimSpace(p.Key)
 
 	if p.Key == "" {
-		p.Key = filepath.Join("~/.ssh", "id_"+p.Name)
+		p.Key = kernel.KeyDir + "/id_" + p.Name
 	}
 	return p, choice == keyGenerate, nil
 }

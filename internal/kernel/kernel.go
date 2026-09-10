@@ -34,6 +34,14 @@ import (
 
 const ConfigVersion = 2
 
+// KeyDir is where ssh keys live, and the only place a profile may point.
+//
+// ssh's own defaults assume it, every tool that manages keys writes there, and
+// allowing anywhere else buys a class of silent breakage: a relative path
+// resolves against whatever directory you happened to run from, so a key that
+// looks fine in the config works in one shell and not the next.
+const KeyDir = "~/.ssh"
+
 var namePattern = regexp.MustCompile(`^[a-z0-9][a-z0-9._-]*$`)
 
 // Profile is one GitHub identity bound to a directory tree.
@@ -50,8 +58,11 @@ type Profile struct {
 	// account answered without judging it.
 	Login string `yaml:"login,omitempty"`
 	Email string `yaml:"email"`
-	Key   string `yaml:"key"`
-	Sign  bool   `yaml:"sign"`
+	// Key is the private key this profile pushes with. It always lives in
+	// ~/.ssh: a bare name is taken as a file there, and anywhere else is
+	// refused. See KeyDir.
+	Key  string `yaml:"key"`
+	Sign bool   `yaml:"sign"`
 }
 
 type Config struct {
@@ -92,9 +103,29 @@ func UnknownProfile(cfg Config, name string) error {
 	return fmt.Errorf("unknown profile %q: configured profiles are %s", name, strings.Join(names, ", "))
 }
 
+// NormalizeKey expands a bare key name into ~/.ssh, and settles on forward
+// slashes. Anything already carrying a separator is left for Validate to
+// accept or refuse.
+//
+// Both separators are treated as separators on every platform, not just the
+// native one: ~/.ghu/config.yaml is a portable file, and a key written on
+// Windows as ~\.ssh\id_work has to mean the same thing when the same config is
+// read on Linux.
+func NormalizeKey(key string) string {
+	key = keySlash(strings.TrimSpace(key))
+	if key == "" || strings.ContainsRune(key, '/') {
+		return key
+	}
+	return KeyDir + "/" + key
+}
+
 // ClaimsLogin reports whether this profile says which GitHub account its key
 // belongs to, which is what makes doctor's probe a check rather than a report.
 func (p Profile) ClaimsLogin() bool { return strings.TrimSpace(p.Login) != "" }
+
+// KeyPath is the profile's key as ghu stores it: a bare name means a file in
+// ~/.ssh, which is how you would say it out loud.
+func (p Profile) KeyPath() string { return NormalizeKey(p.Key) }
 
 func (p Profile) Validate() error {
 	if !namePattern.MatchString(p.Name) {
@@ -104,7 +135,7 @@ func (p Profile) Validate() error {
 		{"dir", p.Dir},
 		{"user", p.User},
 		{"email", p.Email},
-		{"key", p.Key},
+		{"key", p.KeyPath()},
 	} {
 		if strings.TrimSpace(f.value) == "" {
 			return fmt.Errorf("profile %q: %s is required", p.Name, f.label)
@@ -112,6 +143,15 @@ func (p Profile) Validate() error {
 	}
 	if !strings.Contains(p.Email, "@") {
 		return fmt.Errorf("profile %q: email %q is not an address", p.Name, p.Email)
+	}
+
+	// A key outside ~/.ssh is refused rather than quietly accepted: an
+	// absolute path elsewhere is unusual, and a relative one resolves against
+	// the caller's working directory, which is how a profile ends up working
+	// in one shell and failing in the next.
+	if key := NormalizeKey(p.Key); !strings.HasPrefix(key, KeyDir+"/") {
+		return fmt.Errorf("profile %q: key %q must be in %s -- write it as %s/%s",
+			p.Name, p.Key, KeyDir, KeyDir, path.Base(key))
 	}
 
 	// ghu derives the public half by appending .pub, so a key that already
@@ -164,6 +204,9 @@ func (c Config) Names() []string {
 	}
 	return names
 }
+
+// keySlash normalises both separators to /, whatever the host uses.
+func keySlash(p string) string { return strings.ReplaceAll(slash(p), `\`, "/") }
 
 // resolved copies the profiles with each directory passed through
 // EvalSymlinks. A directory that cannot be resolved -- because it does not

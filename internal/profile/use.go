@@ -80,7 +80,7 @@ func (s *Set) Use(ctx context.Context, name string) (UseResult, error) {
 		PreviousProfile: s.profileNameFor(previous),
 		User:            p.User,
 		Email:           p.Email,
-		Key:             kernel.Tildify(kernel.Expand(p.Key, s.Layout.Home), s.Layout.Home),
+		Key:             kernel.Tildify(kernel.Expand(p.KeyPath(), s.Layout.Home), s.Layout.Home),
 		DryRun:          s.git.DryRun(),
 	}
 	res.ReplacedForeign = previous != "" && !s.Layout.OwnsProfilePath(previous)

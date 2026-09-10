@@ -51,7 +51,7 @@ func Generate(ctx context.Context, ssh *sys.SSH, home string, p kernel.Profile, 
 
 	// Generated artifacts always hold absolute paths: git expands ~ in some
 	// fields but not in core.sshCommand, so ghu never relies on it.
-	keyPath := kernel.Expand(p.Key, home)
+	keyPath := kernel.Expand(p.KeyPath(), home)
 
 	res := GenerateResult{
 		Profile:       p.Name,

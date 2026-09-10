@@ -35,7 +35,7 @@ func SSHCommand(keyPath string) string {
 // includeIf patterns, but core.sshCommand only reaches a shell when it holds
 // shell metacharacters, so a ~ there is not reliably expanded.
 func Entries(p Profile, home string) []Entry {
-	key := Expand(p.Key, home)
+	key := Expand(p.KeyPath(), home)
 
 	entries := []Entry{
 		{"user.name", p.User},

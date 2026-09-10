@@ -56,7 +56,7 @@ func (s *Set) Remove(ctx context.Context, name string) (RemoveResult, error) {
 	return RemoveResult{
 		Profile: p,
 		Apply:   applied,
-		KeyKept: kernel.Expand(p.Key, s.Layout.Home),
+		KeyKept: kernel.Expand(p.KeyPath(), s.Layout.Home),
 	}, nil
 }
 
