@@ -15,7 +15,7 @@ import (
 	"io"
 
 	"github.com/semirm-dev/ghu/internal/kernel"
-	"github.com/semirm-dev/ghu/internal/sys"
+	"github.com/semirm-dev/ghu/internal/kernel/sys"
 )
 
 // Action is a command one feature exposes to another -- `ghu profile add

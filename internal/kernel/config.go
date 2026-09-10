@@ -16,7 +16,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/semirm-dev/ghu/internal/sys"
+	"github.com/semirm-dev/ghu/internal/kernel/sys"
 )
 
 // Template is the starter config written when none exists. It is embedded

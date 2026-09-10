@@ -381,10 +381,11 @@ internal/
   profile/        ghu init, and ghu profile add|ls|show|use|rm
   ssh/            ghu ssh generate
   doctor/         ghu doctor
+  backup/         ghu restore
   kernel/         the model, ~/.ghu/config.yaml, the layout, directory
                   resolution, the git-config contract, the reconciler
+    sys/          subprocesses, git config, ssh, atomic writes
   command/        the context a command runs in
-  sys/            subprocesses, git config, ssh, atomic writes
   cli/            assembles the command tree; owns only `ghu version`
   tui/  ui/       the profile form, and the shared styles
 ```

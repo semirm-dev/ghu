@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/semirm-dev/ghu/internal/sys"
+	"github.com/semirm-dev/ghu/internal/kernel/sys"
 )
 
 const BackupsKept = 10

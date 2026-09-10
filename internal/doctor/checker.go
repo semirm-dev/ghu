@@ -9,7 +9,7 @@ import (
 	"sync"
 
 	"github.com/semirm-dev/ghu/internal/kernel"
-	"github.com/semirm-dev/ghu/internal/sys"
+	"github.com/semirm-dev/ghu/internal/kernel/sys"
 )
 
 // The online half of doctor: asking GitHub what identity a profile's key

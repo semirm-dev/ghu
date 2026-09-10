@@ -62,8 +62,8 @@ internal/
   backup/         ghu restore
   kernel/         the model, ~/.ghu/config.yaml, the layout, directory
                   resolution, the git-config contract, the reconciler
+    sys/          subprocesses, git config, ssh, atomic writes
   command/        the context a command runs in
-  sys/            subprocesses, git config, ssh, atomic writes
   cli/            assembles the command tree; owns only `ghu version`
   tui/  ui/       the profile form, and the shared lipgloss styles
 ```
@@ -99,7 +99,7 @@ A caller wanting a profile passes a finished one — collecting it from flags or
 a form is the command's job, which is what keeps `ghu profile add` runnable
 without a terminal.
 
-**One `sys.Runner`, taken directly — there is no interface over it.** `Git` and
+**One `sys.Runner` (in `kernel/sys`), taken directly — there is no interface over it.** `Git` and
 `SSH` hold a `*Runner`. If tests need to stub subprocess execution, give
 `Runner` an unexported `exec` func field defaulting to the real one, rather
 than reintroducing a one-implementation interface.
@@ -111,7 +111,7 @@ three structs, and the pair that costs you something is `--force` with
 runner swallow the `ssh-keygen` that would have replaced it.
 
 **ghu never assembles git config syntax.** Every write goes through the
-`git config` CLI in `sys/git.go`, so git owns quoting, section merging and
+`git config` CLI in `kernel/sys/git.go`, so git owns quoting, section merging and
 idempotency.
 
 ## Declaration order
@@ -145,7 +145,7 @@ output it prints — `ghu profile add` is entirely in `profile/add.go`, next to
 `Set.Add`.
 
 **Anything two files in a package share moves to that package's main file**
-(`profile.go`, `doctor.go`, `kernel.go`, `cli.go`, `sys/runner.go`). A command
+(`profile.go`, `doctor.go`, `kernel.go`, `cli.go`, `kernel/sys/runner.go`). A command
 file holds only what is specific to that command; nothing reaches sideways into
 another command's file. A main file *using* its parts is fine and expected.
 

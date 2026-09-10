@@ -15,8 +15,8 @@ import (
 
 	"github.com/semirm-dev/ghu/internal/command"
 	"github.com/semirm-dev/ghu/internal/kernel"
+	"github.com/semirm-dev/ghu/internal/kernel/sys"
 	"github.com/semirm-dev/ghu/internal/profile"
-	"github.com/semirm-dev/ghu/internal/sys"
 )
 
 // resolve fills in the collaborators for one invocation.

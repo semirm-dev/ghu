@@ -27,7 +27,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/semirm-dev/ghu/internal/sys"
+	"github.com/semirm-dev/ghu/internal/kernel/sys"
 )
 
 // The domain model: a profile, and the config that holds a set of them.

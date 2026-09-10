@@ -7,7 +7,7 @@ package kernel
 import (
 	"fmt"
 
-	"github.com/semirm-dev/ghu/internal/sys"
+	"github.com/semirm-dev/ghu/internal/kernel/sys"
 )
 
 type Entry struct {
