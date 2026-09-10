@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/semirm-dev/ghu/internal/backup"
-	"github.com/semirm-dev/ghu/internal/command"
+	"github.com/semirm-dev/ghu/internal/cli/command"
 	"github.com/semirm-dev/ghu/internal/doctor"
 	"github.com/semirm-dev/ghu/internal/profile"
 

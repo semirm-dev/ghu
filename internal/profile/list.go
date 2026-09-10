@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/semirm-dev/ghu/internal/command"
+	"github.com/semirm-dev/ghu/internal/cli/command"
 	"github.com/semirm-dev/ghu/internal/kernel"
 	"github.com/semirm-dev/ghu/internal/ui"
 )

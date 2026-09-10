@@ -3,10 +3,13 @@
 //
 // It exists so that each feature can own its own commands. A command lives
 // beside the code it drives -- `ghu profile add` in profile, `ghu ssh generate`
-// in ssh -- and
-// they all need the same handful of things, so that handful lives here rather
-// than in the package that assembles the tree. Nothing in a feature imports
-// cli, and cli imports every feature, which is the only direction that works.
+// in ssh -- and they all need the same handful of things, so that handful lives
+// here rather than in the package that assembles the tree.
+//
+// It sits under cli because it belongs to that layer, not to the domain: it
+// holds writers and flags, and knows what a cobra command needs. Features
+// import it without importing cli, which is what keeps the one direction that
+// works: cli imports every feature, and no feature imports cli.
 package command
 
 import (
