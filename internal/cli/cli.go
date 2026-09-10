@@ -13,8 +13,8 @@ import (
 
 	"github.com/charmbracelet/colorprofile"
 
-	"github.com/semirm-dev/ghu/internal/cli/command"
 	"github.com/semirm-dev/ghu/internal/kernel"
+	"github.com/semirm-dev/ghu/internal/kernel/command"
 	"github.com/semirm-dev/ghu/internal/kernel/sys"
 	"github.com/semirm-dev/ghu/internal/profile"
 )

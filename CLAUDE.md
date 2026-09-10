@@ -63,8 +63,8 @@ internal/
   kernel/         the model, ~/.ghu/config.yaml, the layout, directory
                   resolution, the git-config contract, the reconciler
     sys/          subprocesses, git config, ssh, atomic writes
-  cli/            assembles the command tree; owns only `ghu version`
     command/      the context a command runs in
+  cli/            assembles the command tree; owns only `ghu version`
   tui/  ui/       the profile form, and the shared lipgloss styles
 ```
 
@@ -83,7 +83,7 @@ little else.
 `command`, `kernel`, `sys` and `ui` — never on each other. Where one command
 needs another (`ghu profile add --generate` must print what `ghu ssh generate`
 prints), `cli` passes the action in as a `command.Action` callback. Preserve
-this: it is why `cli/command` exists at all — `Env` cannot live in `cli`, because
+this: it is why `kernel/command` exists at all — `Env` cannot live in `cli`, because
 features need it and `cli` imports every feature.
 
 **`kernel` holds contracts, not behaviour looking for a home.** `Profile` and

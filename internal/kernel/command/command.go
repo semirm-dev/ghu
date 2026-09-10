@@ -6,10 +6,10 @@
 // in ssh -- and they all need the same handful of things, so that handful lives
 // here rather than in the package that assembles the tree.
 //
-// It sits under cli because it belongs to that layer, not to the domain: it
-// holds writers and flags, and knows what a cobra command needs. Features
-// import it without importing cli, which is what keeps the one direction that
-// works: cli imports every feature, and no feature imports cli.
+// It sits under kernel, alongside sys, because it is the other thing every
+// feature needs and nothing in the domain needs back: kernel does not import
+// it, cli imports every feature, and no feature imports cli. That is the one
+// direction that works.
 package command
 
 import (

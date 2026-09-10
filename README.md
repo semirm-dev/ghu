@@ -385,8 +385,8 @@ internal/
   kernel/         the model, ~/.ghu/config.yaml, the layout, directory
                   resolution, the git-config contract, the reconciler
     sys/          subprocesses, git config, ssh, atomic writes
-  cli/            assembles the command tree; owns only `ghu version`
     command/      the context a command runs in
+  cli/            assembles the command tree; owns only `ghu version`
   tui/  ui/       the profile form, and the shared styles
 ```
 
