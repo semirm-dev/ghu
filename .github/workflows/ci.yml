@@ -1,0 +1,33 @@
+# Lint, test and cross-compile on every push. ghu is pure Go built with
+# CGO_ENABLED=0, so one Linux runner produces every platform it ships; a macOS
+# or Windows runner would cost minutes without checking anything more.
+name: ci
+
+on: [push, pull_request]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+
+      # make lint shells out to scripts/order.py for the declaration order, so
+      # the runner needs python3. The ubuntu images ship it.
+      - run: make lint
+      - run: make test
+
+      # bin/ is committed and the README sends people straight to it, so a
+      # stale binary there is what everyone downloads. The build is
+      # reproducible (-trimpath, -buildvcs=false, version from VERSION) and
+      # setup-go pins the toolchain from go.mod, so a rebuild must come out
+      # byte-identical. This doubles as the only check that the platforms
+      # nothing here runs still compile.
+      - name: bin/ is a current build of the source
+        run: |
+          make release
+          git diff --exit-code -- bin \
+            || { echo "bin/ is stale: run 'make release' and commit the result"; exit 1; }

@@ -18,6 +18,7 @@ Repositories outside every profile's folder opt in with `ghu profile use`.
 make build      # .build/ghu, with the version stamped from VERSION
 make install    # into GOBIN
 make lint       # gofmt, imports, declaration order, vet -- run before committing
+make release    # cross-compile bin/ for every platform, plus SHA256SUMS
 make order      # rewrite declarations into the house order (see below)
 make test       # go test ./... -race -count=1
 make tidy       # go mod tidy
@@ -219,6 +220,23 @@ later runs add rolling snapshots.
 
 **`--dry-run` must leave the filesystem exactly as it found it**, including
 backups and directory creation — not just the commands the runner suppresses.
+
+## Releases
+
+`bin/` is committed, and the README sends people to it over
+`raw.githubusercontent.com`, so it is a published artifact rather than build
+output: **any change to the source means `make release` and committing the
+result.** CI fails otherwise. It can, because `-trimpath -buildvcs=false` and a
+version that comes from `VERSION` rather than the build make the binaries
+reproducible, and `setup-go` pins the toolchain from `go.mod` -- so a rebuild
+that differs means `bin/` was stale, not that the runner was different.
+
+Everything is pure Go with `CGO_ENABLED=0`, so one Linux runner builds all five
+platforms; there is no reason for a macOS or Windows runner.
+
+Pushing a `v*` tag publishes a release. The tag has to match `VERSION` and the
+workflow checks it, because the version reaches the binary as an ldflag and a
+mismatch would ship binaries whose `ghu version` is wrong.
 
 ## Committing
 

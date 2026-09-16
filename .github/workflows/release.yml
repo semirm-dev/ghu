@@ -1,0 +1,44 @@
+# Publishes a release when a v* tag is pushed. make release already
+# cross-compiles every platform and writes SHA256SUMS, so this workflow only
+# has to check the tag, run it, and attach what it produced.
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+
+      # The version lives in VERSION and reaches the binary as an ldflag. A tag
+      # that disagrees would publish binaries whose `ghu version` is a lie.
+      - name: Tag matches VERSION
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          test "$(cat VERSION)" = "${GITHUB_REF_NAME#v}" \
+            || { echo "tag ${GITHUB_REF_NAME} does not match VERSION $(cat VERSION)"; exit 1; }
+
+      - run: make lint
+      - run: make test
+      - run: make release
+
+      # The stamp is the part a cross-compile can silently get wrong.
+      - name: Check the native binary runs and is stamped
+        run: |
+          test "$(./bin/ghu-linux-amd64 version)" = "$(cat VERSION)"
+
+      - uses: softprops/action-gh-release@v3
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          files: bin/*
