@@ -4,7 +4,7 @@ BUILD   := .build
 BIN     := bin
 # GOOS/GOARCH. The published names say macos rather than darwin -- see the
 # release target.
-PLATFORMS := darwin/amd64 darwin/arm64 linux/amd64 linux/arm64 windows/amd64 windows/arm64
+PLATFORMS := darwin/arm64 linux/amd64 linux/arm64 windows/amd64 windows/arm64
 COVERFILE := coverprofile
 
 .PHONY: help build install test test-cover lint order release tidy clean

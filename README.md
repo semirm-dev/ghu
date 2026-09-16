@@ -64,7 +64,6 @@ your `PATH`:
 | | |
 |---|---|
 | macOS, Apple Silicon | `ghu-macos-arm64` |
-| macOS, Intel | `ghu-macos-amd64` |
 | Linux, x86-64 | `ghu-linux-amd64` |
 | Linux, ARM64 | `ghu-linux-arm64` |
 | Windows, x86-64 | `ghu-windows-amd64.exe` |
