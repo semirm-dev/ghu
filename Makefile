@@ -11,7 +11,7 @@ COVERFILE := coverprofile
 VERSION ?=
 STAMP := $(if $(VERSION),-X $(MODULE)/internal/cli.version=$(VERSION),)
 
-.PHONY: help build install test test-cover lint order release tidy clean
+.PHONY: help build install test test-cover lint order release tag tidy clean
 
 help: ## Show available targets
 	@echo "Usage: make <target>"
@@ -23,6 +23,7 @@ help: ## Show available targets
 	@echo "  lint        gofmt, goimports, declaration order and go vet."
 	@echo "  order       Reorder declarations to the house order."
 	@echo "  release     Cross-compile binaries for all platforms into $(BIN)/."
+	@echo "  tag         Tag a release: make tag VERSION=0.3.0."
 	@echo "  tidy        go mod tidy."
 	@echo "  clean       Remove build output."
 
@@ -62,6 +63,22 @@ release: ## Cross-compile release binaries into bin/
 			-o $$out ./cmd/ghu; \
 	done
 	@cd $(BIN) && sha256sum * > SHA256SUMS && echo "  $(BIN)/SHA256SUMS"
+
+# ghu's version comes from the tag, so there is no bump to commit and this only
+# tags. It exists so the flow matches sigi's, and so the -X stamp is proven on
+# this machine rather than discovered to be broken by a release run.
+tag: ## Tag a release (make tag VERSION=0.3.0)
+	@[ -n "$(VERSION)" ] || { echo "usage: make tag VERSION=0.3.0"; exit 1; }
+	@git diff --quiet && git diff --cached --quiet \
+		|| { echo "working tree is dirty; commit or stash first"; exit 1; }
+	@mkdir -p $(BUILD)
+	@go build -ldflags "$(STAMP)" -o $(BUILD)/$(BINARY)-tagcheck ./cmd/ghu
+	@test "$$($(BUILD)/$(BINARY)-tagcheck version)" = "$(VERSION)" \
+		|| { echo "stamped binary reports $$($(BUILD)/$(BINARY)-tagcheck version), not $(VERSION)"; exit 1; }
+	@rm -f $(BUILD)/$(BINARY)-tagcheck
+	@git tag -a v$(VERSION) -m "$(BINARY) $(VERSION)"
+	@echo "  tagged v$(VERSION) on $$(git rev-parse --short HEAD)"
+	@echo "  push with: git push && git push origin v$(VERSION)"
 
 order: ## Reorder declarations to the house order
 	@python3 scripts/order.py $$(find internal cmd -name '*.go')
