@@ -243,35 +243,31 @@ sigi ships too. `PLATFORMS` stays in GOOS/GOARCH because that is what `go
 build` takes, so `release` maps `darwin` to `macos` on the way out; the two
 vocabularies are not the same and only one of them is for people.
 
-**The version is the `version` constant in `internal/cli/version.go`,** and
-nowhere else -- there is no VERSION file and no `-X` ldflag. Bump the constant
-in the commit that prepares a release. Pushing a `v*` tag then publishes one,
-and the workflow checks the tag against what the built binary prints rather
-than against the source, so the constant, the build and `ghu version` are all
-covered at once.
+**The tag is the version, and the only place it is written.** There is no
+VERSION file and no constant. `release.yml` passes the tag to `make release`,
+which stamps it in with `-X .../internal/cli.version=X.Y.Z`. A Go module's
+version *is* its tag -- that is how `go install ...@v0.2.0` resolves -- so
+writing it down in the tree as well would be a second copy to keep in
+agreement, and keeping two copies in agreement is what the failed first
+attempt at v0.2.0 was.
 
 To cut one:
 
-1. Commit the work.
-2. Bump the `version` constant and commit that.
-3. `git push`, and let CI go green.
-4. `git tag -a vX.Y.Z -m "ghu X.Y.Z"` and `git push origin vX.Y.Z`.
+1. Commit the work and `git push`. Let CI go green.
+2. `git tag -a vX.Y.Z -m "ghu X.Y.Z"` and `git push origin vX.Y.Z`.
 
-**Tag the bump commit or something after it, never before it.** The tag check
-compares the tag to what the built binary prints, so a tag on a commit that
-predates the bump fails the release job -- correctly, because those binaries
-report the old version. The fix is to move the tag, not to weaken the check:
-delete it locally and on the remote, recreate it on the right commit, push
-again. Forcing past this ships a release whose binaries disagree with their own
-tag, and the release page is the last place anyone would notice.
+There is no bump commit and no ordering hazard, because there is nothing in the
+tree for the tag to disagree with.
 
-`cli.Version()` prefers the module version from `debug.ReadBuildInfo()` where
-there is one, so `go install ...@latest` reports the tag it resolved instead of
-the constant -- that path used to report `dev`. `make release` passes
-`-buildvcs=false`, so release binaries have no module version and report the
-constant, which is what keeps them reproducible. `make build` does not, so a
-checkout build reports a VCS pseudo-version: that is deliberate, and it is how
-you tell a dev binary from a released one.
+The release job still checks the built binary reports the tag. That is not
+checking two copies against each other any more -- it is checking the stamp
+arrived, because `-X` with a wrong symbol path does nothing and reports
+nothing, and the first sign would be a release full of binaries saying "dev".
+
+`cli.Version()` falls back to `debug.ReadBuildInfo()` when nothing stamped it,
+so `go install ...@latest` reports the module version it resolved. A build from
+a checkout has neither and reports "dev". `make release VERSION=x.y.z` stamps
+locally if you want to reproduce what a tag would build.
 
 ## Committing
 

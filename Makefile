@@ -6,6 +6,10 @@ BIN     := bin
 # release target.
 PLATFORMS := darwin/arm64 linux/amd64 linux/arm64 windows/amd64 windows/arm64
 COVERFILE := coverprofile
+# Set by the release workflow from the tag. A local `make release` leaves it
+# empty, and those binaries report "dev", because they are not a release.
+VERSION ?=
+STAMP := $(if $(VERSION),-X $(MODULE)/internal/cli.version=$(VERSION),)
 
 .PHONY: help build install test test-cover lint order release tidy clean
 
@@ -54,7 +58,7 @@ release: ## Cross-compile release binaries into bin/
 		out=$(BIN)/$(BINARY)-$$label-$$arch$$ext; \
 		echo "  $$out"; \
 		CGO_ENABLED=0 GOOS=$$os GOARCH=$$arch \
-			go build -trimpath -buildvcs=false -ldflags "-s -w" \
+			go build -trimpath -buildvcs=false -ldflags "-s -w $(STAMP)" \
 			-o $$out ./cmd/ghu; \
 	done
 	@cd $(BIN) && sha256sum * > SHA256SUMS && echo "  $(BIN)/SHA256SUMS"

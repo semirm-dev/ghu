@@ -8,20 +8,22 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// version is where ghu's version is written, and the only place it is. A v*
-// tag is checked against it before a release publishes, the way sigi's tag is
-// checked against build.zig.zon. Bump it in the commit that prepares a release.
-const version = "0.2.0"
+// version is set by the release workflow from the tag it is building, with
+// -X github.com/semirm-dev/ghu/internal/cli.version=X.Y.Z. It is the only
+// thing that sets it: a Go module's version is its tag, so writing it down
+// anywhere else would be a second copy to keep in agreement with the first.
+var version = "dev"
 
 // Version reports the version this binary was built from.
 //
 // A `go install` build records the module version it resolved -- an exact tag,
-// or a pseudo-version for a commit past one -- which describes the commit
-// rather than the last release, so it wins where it exists. That is the path
-// the README recommends, and it used to report "dev". A build from a checkout
-// has no module version (the Makefile passes -buildvcs=false to keep release
-// binaries reproducible), and falls back to the constant.
+// or a pseudo-version for a commit past one -- which the ldflag cannot reach,
+// so it is used where it exists. A build from a checkout has neither and says
+// so.
 func Version() string {
+	if version != "dev" {
+		return version
+	}
 	if bi, ok := debug.ReadBuildInfo(); ok {
 		if v := bi.Main.Version; v != "" && v != "(devel)" {
 			return strings.TrimPrefix(v, "v")

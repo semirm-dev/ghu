@@ -23,20 +23,26 @@ jobs:
 
       - run: make lint
       - run: make test
-      - run: make release
 
-      # The version is the `version` constant in internal/cli/version.go.
-      # Checking the tag against what the built binary prints, rather than
-      # against the source, covers the constant, the build and `ghu version`
-      # in one step -- a mismatch would publish binaries whose version is a lie.
-      - name: Tag matches the built version
+      # The tag is the version, and the only place it is written. A dispatch
+      # run has no tag, so VERSION stays empty and those binaries report
+      # "dev" -- nothing is being published from them.
+      - name: Build
+        run: |
+          v=""
+          case "${{ github.ref }}" in refs/tags/v*) v="${GITHUB_REF_NAME#v}" ;; esac
+          make release VERSION="$v"
+
+      # -X does nothing at all if its symbol path is wrong, and says nothing
+      # about it, so this checks the stamp arrived rather than checking two
+      # copies of the version against each other.
+      - name: The version stamp landed
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           built="$(./bin/ghu-linux-amd64 version)"
           test "$built" = "${GITHUB_REF_NAME#v}" \
             || { echo "tag ${GITHUB_REF_NAME}, but the binary reports $built"; exit 1; }
 
-      # A dispatch run has no tag to check against, so just prove it runs.
       - run: ./bin/ghu-linux-amd64 version
 
       - uses: softprops/action-gh-release@v3
