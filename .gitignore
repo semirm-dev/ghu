@@ -1,9 +1,5 @@
 # Binaries for programs and plugins
 *.exe
-# ...except the released Windows binary, which bin/ publishes like the
-# rest. The blanket *.exe above had been quietly keeping it out, so the
-# README's Windows row pointed at a file that was not in the repository.
-!bin/*.exe
 *.exe~
 *.dll
 *.so
@@ -20,6 +16,8 @@
 
 # Build output
 /.build/
+# `make release` output. The published binaries come from CI.
+/bin/
 # The root-level binary from a bare `go build ./cmd/ghu`.
 /ghu
 

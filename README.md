@@ -57,24 +57,26 @@ Repositories outside every profile tree opt in explicitly with `ghu profile use`
 
 ## Install
 
-Prebuilt binaries are in [`bin/`](bin) -- pick the one for your machine, make it
-executable, and put it on your `PATH`:
+Every [release](https://github.com/semirm-dev/ghu/releases) carries a binary
+per platform -- pick the one for your machine, make it executable, and put it on
+your `PATH`:
 
 | | |
 |---|---|
-| macOS, Apple Silicon | `bin/ghu-darwin-arm64` |
-| macOS, Intel | `bin/ghu-darwin-amd64` |
-| Linux, x86-64 | `bin/ghu-linux-amd64` |
-| Linux, ARM64 | `bin/ghu-linux-arm64` |
-| Windows, x86-64 | `bin/ghu-windows-amd64.exe` |
+| macOS, Apple Silicon | `ghu-darwin-arm64` |
+| macOS, Intel | `ghu-darwin-amd64` |
+| Linux, x86-64 | `ghu-linux-amd64` |
+| Linux, ARM64 | `ghu-linux-arm64` |
+| Windows, x86-64 | `ghu-windows-amd64.exe` |
 
 ```bash
-curl -LO https://raw.githubusercontent.com/semirm-dev/ghu/main/bin/ghu-darwin-arm64
+curl -LO https://github.com/semirm-dev/ghu/releases/latest/download/ghu-darwin-arm64
 chmod +x ghu-darwin-arm64
 sudo mv ghu-darwin-arm64 /usr/local/bin/ghu
 ```
 
-`bin/SHA256SUMS` has the checksums; verify with `sha256sum -c SHA256SUMS`.
+`SHA256SUMS` is attached to the same release; verify with
+`sha256sum --ignore-missing -c SHA256SUMS`.
 macOS will quarantine a downloaded binary -- `xattr -d com.apple.quarantine ghu`
 clears it.
 

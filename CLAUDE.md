@@ -223,13 +223,16 @@ backups and directory creation — not just the commands the runner suppresses.
 
 ## Releases
 
-`bin/` is committed, and the README sends people to it over
-`raw.githubusercontent.com`, so it is a published artifact rather than build
-output: **any change to the source means `make release` and committing the
-result.** CI fails otherwise. It can, because `-trimpath -buildvcs=false` and a
-version that is a constant in the source rather than anything the build
-discovers make the binaries reproducible, and `setup-go` pins the toolchain from `go.mod` -- so a rebuild
-that differs means `bin/` was stale, not that the runner was different.
+**Binaries come from a tag, and `bin/` is not committed.** `make release`
+writes there for local use, and the release workflow builds the same five
+binaries from the tagged source and attaches them with `SHA256SUMS`. That is
+what the README links to.
+
+`bin/` was tracked once, and the README pointed at `raw.githubusercontent.com`.
+Stripped Go binaries do not delta-compress, so each of the eight commits that
+touched it added up to 33MB that stays in history: 214MB of binaries against
+700KB of source. Do not put them back. A release is the same files with a
+version attached to them.
 
 Everything is pure Go with `CGO_ENABLED=0`, so one Linux runner builds all five
 platforms; there is no reason for a macOS or Windows runner.
