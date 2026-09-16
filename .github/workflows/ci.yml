@@ -20,6 +20,8 @@ jobs:
       - run: make lint
       - run: make test
 
-      # Nothing here runs the other platforms, so cross-compiling them is the
-      # only thing that catches a change which does not build off Linux.
+      # The same command release.yml runs. ghu has no build tags and no
+      # runtime.GOOS, so this is not really about the code compiling
+      # elsewhere -- it is so a tag is never the first time the release path
+      # itself is exercised.
       - run: make release
