@@ -2,7 +2,9 @@ BINARY  := ghu
 MODULE  := github.com/semirm-dev/ghu
 BUILD   := .build
 BIN     := bin
-PLATFORMS := darwin/amd64 darwin/arm64 linux/amd64 linux/arm64 windows/amd64
+# GOOS/GOARCH. The published names say macos rather than darwin -- see the
+# release target.
+PLATFORMS := darwin/amd64 darwin/arm64 linux/amd64 linux/arm64 windows/amd64 windows/arm64
 COVERFILE := coverprofile
 
 .PHONY: help build install test test-cover lint order release tidy clean
@@ -48,7 +50,8 @@ release: ## Cross-compile release binaries into bin/
 	@set -e; for platform in $(PLATFORMS); do \
 		os=$${platform%/*}; arch=$${platform#*/}; \
 		ext=""; [ "$$os" = "windows" ] && ext=".exe"; \
-		out=$(BIN)/$(BINARY)-$$os-$$arch$$ext; \
+		case $$os in darwin) label=macos ;; *) label=$$os ;; esac; \
+		out=$(BIN)/$(BINARY)-$$label-$$arch$$ext; \
 		echo "  $$out"; \
 		CGO_ENABLED=0 GOOS=$$os GOARCH=$$arch \
 			go build -trimpath -buildvcs=false -ldflags "-s -w" \

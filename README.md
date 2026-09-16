@@ -63,16 +63,17 @@ your `PATH`:
 
 | | |
 |---|---|
-| macOS, Apple Silicon | `ghu-darwin-arm64` |
-| macOS, Intel | `ghu-darwin-amd64` |
+| macOS, Apple Silicon | `ghu-macos-arm64` |
+| macOS, Intel | `ghu-macos-amd64` |
 | Linux, x86-64 | `ghu-linux-amd64` |
 | Linux, ARM64 | `ghu-linux-arm64` |
 | Windows, x86-64 | `ghu-windows-amd64.exe` |
+| Windows, ARM64 | `ghu-windows-arm64.exe` |
 
 ```bash
-curl -LO https://github.com/semirm-dev/ghu/releases/latest/download/ghu-darwin-arm64
-chmod +x ghu-darwin-arm64
-sudo mv ghu-darwin-arm64 /usr/local/bin/ghu
+curl -LO https://github.com/semirm-dev/ghu/releases/latest/download/ghu-macos-arm64
+chmod +x ghu-macos-arm64
+sudo mv ghu-macos-arm64 /usr/local/bin/ghu
 ```
 
 `SHA256SUMS` is attached to the same release; verify with
