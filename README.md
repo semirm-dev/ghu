@@ -79,6 +79,9 @@ sudo mv ghu-macos-arm64 /usr/local/bin/ghu
 `sha256sum --ignore-missing -c SHA256SUMS`.
 macOS will quarantine a downloaded binary -- `xattr -d com.apple.quarantine ghu`
 clears it.
+A binary saved through a browser rather than `curl` -- the common case on
+WSL -- loses the executable bit the same way: `chmod +x ghu` fixes it, and
+you'll need to repeat that after every re-download.
 
 With Go installed you can skip all that:
 
