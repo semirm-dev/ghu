@@ -250,6 +250,21 @@ and the workflow checks the tag against what the built binary prints rather
 than against the source, so the constant, the build and `ghu version` are all
 covered at once.
 
+To cut one:
+
+1. Commit the work.
+2. Bump the `version` constant and commit that.
+3. `git push`, and let CI go green.
+4. `git tag -a vX.Y.Z -m "ghu X.Y.Z"` and `git push origin vX.Y.Z`.
+
+**Tag the bump commit or something after it, never before it.** The tag check
+compares the tag to what the built binary prints, so a tag on a commit that
+predates the bump fails the release job -- correctly, because those binaries
+report the old version. The fix is to move the tag, not to weaken the check:
+delete it locally and on the remote, recreate it on the right commit, push
+again. Forcing past this ships a release whose binaries disagree with their own
+tag, and the release page is the last place anyone would notice.
+
 `cli.Version()` prefers the module version from `debug.ReadBuildInfo()` where
 there is one, so `go install ...@latest` reports the tag it resolved instead of
 the constant -- that path used to report `dev`. `make release` passes
