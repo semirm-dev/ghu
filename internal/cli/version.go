@@ -11,7 +11,7 @@ import (
 // version is where ghu's version is written, and the only place it is. A v*
 // tag is checked against it before a release publishes, the way sigi's tag is
 // checked against build.zig.zon. Bump it in the commit that prepares a release.
-const version = "0.1.0"
+const version = "0.2.0"
 
 // Version reports the version this binary was built from.
 //
