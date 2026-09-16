@@ -3,7 +3,12 @@
 # or Windows runner would cost minutes without checking anything more.
 name: ci
 
-on: [push, pull_request]
+# Branches only. A tag push is the same commit CI already checked, and
+# release.yml builds it again anyway.
+on:
+  push:
+    branches: ["**"]
+  pull_request:
 
 jobs:
   check:
