@@ -32,10 +32,14 @@ go tool goimports -local github.com/semirm-dev/ghu -w .
 ```
 
 **There is almost no test suite.** It was removed deliberately while the
-package layout was in flux; `internal/core/keypath_test.go` is what came
-back, because key-path handling is the part that differs across platforms and
-fails silently. Write new ones black-box (`package profile_test`) as the rest
-of the codebase was. A single one runs with
+package layout was in flux. `internal/core/keypath_test.go` is what came back,
+because key-path handling is the part that differs across platforms and fails
+silently, and `internal/profile/profile_test.go` runs the `init`/`add`/`ls`/
+`show`/`use`/`rm` lifecycle against a real `git` binary under an isolated
+`HOME`/`GIT_CONFIG_GLOBAL`, the same setup the manual verification below uses,
+so a pass means the actual `git config` commands `ghu` shells out to behave,
+not that a mock agrees with itself. Write new ones black-box (`package
+profile_test`) as these are. A single one runs with
 `go test ./internal/profile/ -run TestName -count=1`.
 
 To stub subprocess execution, give `sys.Runner` an unexported `exec` func field
@@ -199,6 +203,16 @@ case-insensitive filesystems, where plain `gitdir` silently fails to match.
 
 **`core.sshCommand` gets an absolute path.** git expands `~` in `include.path`
 and in `includeIf` patterns, but not reliably there.
+
+**A repository's own local config can shadow a profile silently.** git
+resolves local `.git/config` before an `includeIf`-pulled file, so a leftover
+local `user.name`/`user.email`/`core.sshCommand` wins over the profile and
+never updates again, even after `ghu init` reconciles. `Show` in
+`internal/profile/show.go` detects this by checking whether
+`git config --show-origin` reports a relative path (`.git/config`, always
+relative) rather than the absolute path every file ghu writes or includes
+resolves to -- not by comparing values, which is what let this slip past the
+existing drift check when the shadowed value happened to match the profile.
 
 **ghu never edits `~/.ssh/config`, and never deletes an SSH key** except under
 `ghu ssh generate --force`. Removing a profile is a configuration change, not a

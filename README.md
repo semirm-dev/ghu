@@ -326,9 +326,14 @@ you the `git config --local --unset` command to run instead.
 directory — `user.name`, `user.email`, `core.sshCommand`, `user.signingkey`,
 `commit.gpgsign` — and names the file each value came from, straight out of
 `git config --show-origin`. It reads git, never `ghu`'s own config, so it can
-disagree with the profile you expected. That disagreement is the answer. It also
-flags drift: a directory covered by a profile where git nonetheless resolves a
-different `user.email`.
+disagree with the profile you expected. That disagreement is the answer. It flags
+drift: a directory covered by a profile where git nonetheless resolves a
+different `user.email`. It also flags a local override: `user.name`, `user.email`
+or `core.sshCommand` set directly in the repository's own `.git/config` rather
+than coming from the profile's included file. Git resolves local config first, so
+that value wins silently and stops following the profile even after `ghu init`
+reconciles it — `ghu profile show` prints the `git config --local --unset` command
+to fix each one.
 
 **Then `ghu doctor`.** It checks each profile's config entry, its directory, its
 key permissions, its generated file, its `includeIf` entry and that entry's
@@ -368,9 +373,12 @@ make tag         # tag a release -- make tag VERSION=0.4.0
 make clean       # remove build output
 ```
 
-The test suite was removed while the package layout was being reworked; what
-is left covers key-path handling, which is the part that differs between Linux,
-macOS and Windows and fails silently when it is wrong.
+Most of the test suite was removed while the package layout was being reworked.
+What has come back so far: key-path handling, which is the part that differs
+between Linux, macOS and Windows and fails silently when it is wrong, and an
+end-to-end run of `init`/`add`/`ls`/`show`/`use`/`rm` against a real `git`
+binary and an isolated `HOME`, so a pass means the commands `ghu` actually
+shells out to behave, not just that the Go code compiles against a mock.
 
 `ghu` is organised by feature. Each package under `internal/` owns the commands
 that drive it -- `ghu profile add` is declared in `internal/profile/`, not in
