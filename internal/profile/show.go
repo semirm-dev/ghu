@@ -51,6 +51,13 @@ type Status struct {
 	// a different user.email than the profile declares. This is the failure
 	// that mis-attributes commits silently.
 	Drift bool `json:"drift"`
+
+	// LocalOverrides lists keys set directly in this repository's own local
+	// git config, shadowing the value ghu's profile file would otherwise
+	// supply. git resolves local config before an includeIf-pulled file, so
+	// these win silently: the profile can be edited and reconciled forever
+	// without this repository ever seeing the change.
+	LocalOverrides []string `json:"local_overrides,omitempty"`
 }
 
 func (s Status) Lookup(key string) (Value, bool) {
@@ -79,24 +86,6 @@ func (s *Set) Show(ctx context.Context) (Status, error) {
 		Values: make([]Value, 0, len(ShowKeys)),
 	}
 
-	for _, key := range ShowKeys {
-		origin, err := s.git.ShowOrigin(ctx, key)
-		switch {
-		case errors.Is(err, sys.ErrNotFound):
-			// Unset is a fact to report, not a failure.
-			status.Values = append(status.Values, Value{Key: key})
-		case err != nil:
-			return Status{}, fmt.Errorf("resolving %s: %w", key, err)
-		default:
-			status.Values = append(status.Values, Value{
-				Key:   key,
-				Value: origin.Value,
-				File:  tildifyOrigin(origin.File, home),
-				Set:   true,
-			})
-		}
-	}
-
 	matched, ok := core.MatchCurrent(s.Config, s.Layout.Home)
 	if ok {
 		status.Profile = matched.Name
@@ -115,6 +104,35 @@ func (s *Set) Show(ctx context.Context) (Status, error) {
 		default:
 			status.Override = core.Tildify(include, home)
 			status.OverrideManaged = s.Layout.OwnsProfilePath(core.Expand(include, home))
+		}
+	}
+
+	// A repository ghu governs, either by directory match or an explicit
+	// `use`, is one where the shadowing check below applies.
+	governed := status.InRepo && (ok || status.Override != "")
+
+	for _, key := range ShowKeys {
+		origin, err := s.git.ShowOrigin(ctx, key)
+		switch {
+		case errors.Is(err, sys.ErrNotFound):
+			// Unset is a fact to report, not a failure.
+			status.Values = append(status.Values, Value{Key: key})
+		case err != nil:
+			return Status{}, fmt.Errorf("resolving %s: %w", key, err)
+		default:
+			status.Values = append(status.Values, Value{
+				Key:   key,
+				Value: origin.Value,
+				File:  tildifyOrigin(origin.File, home),
+				Set:   true,
+			})
+			// git reports a repository's own config with a path relative to
+			// it (".git/config"); every file ghu writes or includes is
+			// absolute. A relative origin here means this key is set
+			// directly in the repository, shadowing the profile.
+			if governed && !strings.HasPrefix(origin.File, "/") {
+				status.LocalOverrides = append(status.LocalOverrides, key)
+			}
 		}
 	}
 
@@ -213,6 +231,12 @@ func renderShow(e *command.Env, st Status) error {
 	}
 	ui.Table(w, values)
 
+	if len(st.LocalOverrides) > 0 {
+		fmt.Fprintln(errw, ui.Warn.Render(localOverrideMessage(st)))
+		for _, key := range st.LocalOverrides {
+			fmt.Fprintln(errw, ui.Muted.Render("  git config --local --unset "+key))
+		}
+	}
 	if st.Drift {
 		fmt.Fprintln(errw, ui.Warn.Render(driftMessage(st)))
 	}

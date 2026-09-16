@@ -121,7 +121,7 @@ func addCmd(e *command.Env, generate command.Action) *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&opts.Profile.Name, "name", "", "Short name for this profile, e.g. work or personal")
-	cmd.Flags().StringVar(&opts.Profile.Dir, "dir", "", "Folder whose repositories use this account")
+	cmd.Flags().StringVar(&opts.Profile.Dir, "dir", "", "Folder whose repositories use this account (full path, e.g. ~/work)")
 	cmd.Flags().StringVar(&opts.Profile.User, "user", "",
 		"Name shown on your commits, e.g. \"Semir Mahovkic\" (git's user.name)")
 	cmd.Flags().StringVar(&opts.Profile.Login, "login", "",

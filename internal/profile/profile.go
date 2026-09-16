@@ -176,6 +176,16 @@ func addInteractively(ctx context.Context, e *command.Env, generate command.Acti
 	return nil
 }
 
+// localOverrideMessage warns that a value ghu's included profile file would
+// otherwise supply is set directly in the repository's own local git config
+// instead, which git resolves first: the profile can be edited and
+// reconciled forever without this repository ever picking up the change.
+func localOverrideMessage(st Status) string {
+	return fmt.Sprintf(
+		"warning: %s set directly in this repository's local git config, which wins over ghu's profile silently — remove them so this repository follows the profile again:",
+		strings.Join(st.LocalOverrides, ", "))
+}
+
 func driftMessage(st Status) string {
 	email, _ := st.Lookup(EmailKey)
 	effective := email.Value

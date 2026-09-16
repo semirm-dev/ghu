@@ -43,7 +43,7 @@ func promptProfile(home string, taken []string, seed core.Profile) (core.Profile
 
 			huh.NewInput().
 				Title("Directory").
-				Description("Repositories under this tree use this account.").
+				Description("Repositories under this tree use this account. Full path, e.g. ~/work or /home/you/work.").
 				Value(&p.Dir).
 				Validate(validateDir(home)),
 
