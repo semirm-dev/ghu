@@ -364,6 +364,7 @@ make lint        # gofmt, imports, declaration order, go vet
 make order       # rewrite declarations into the house order
 make test        # go test ./... -race -count=1
 make release     # cross-compile bin/ for every platform
+make tag         # tag a release -- make tag VERSION=0.4.0
 make clean       # remove build output
 ```
 
@@ -399,3 +400,20 @@ runnable without a terminal.
 
 `CLAUDE.md` has the conventions in full -- file layout, declaration order, and
 the details of git's `includeIf` handling that are easy to get wrong.
+
+## Releasing
+
+```bash
+make tag VERSION=0.4.0
+git push && git push origin v0.4.0
+```
+
+The tag is the version, and the only place it is written -- there is no version
+file to bump and nothing in the tree for a tag to disagree with. `make tag`
+refuses a dirty tree, builds with the version stamped in, checks `ghu version`
+reports it, and only then creates the tag.
+
+Pushing the tag runs [`release.yml`](.github/workflows/release.yml): it
+cross-compiles all five platforms on one Linux runner, verifies the stamp
+landed, writes `SHA256SUMS`, and publishes them as a
+[release](https://github.com/semirm-dev/ghu/releases).
