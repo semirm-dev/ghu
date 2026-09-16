@@ -15,7 +15,7 @@ Repositories outside every profile's folder opt in with `ghu profile use`.
 ## Commands
 
 ```bash
-make build      # .build/ghu, with the version stamped from VERSION
+make build      # .build/ghu
 make install    # into GOBIN
 make lint       # gofmt, imports, declaration order, vet -- run before committing
 make release    # cross-compile bin/ for every platform, plus SHA256SUMS
@@ -227,16 +227,27 @@ backups and directory creation — not just the commands the runner suppresses.
 `raw.githubusercontent.com`, so it is a published artifact rather than build
 output: **any change to the source means `make release` and committing the
 result.** CI fails otherwise. It can, because `-trimpath -buildvcs=false` and a
-version that comes from `VERSION` rather than the build make the binaries
-reproducible, and `setup-go` pins the toolchain from `go.mod` -- so a rebuild
+version that is a constant in the source rather than anything the build
+discovers make the binaries reproducible, and `setup-go` pins the toolchain from `go.mod` -- so a rebuild
 that differs means `bin/` was stale, not that the runner was different.
 
 Everything is pure Go with `CGO_ENABLED=0`, so one Linux runner builds all five
 platforms; there is no reason for a macOS or Windows runner.
 
-Pushing a `v*` tag publishes a release. The tag has to match `VERSION` and the
-workflow checks it, because the version reaches the binary as an ldflag and a
-mismatch would ship binaries whose `ghu version` is wrong.
+**The version is the `version` constant in `internal/cli/version.go`,** and
+nowhere else -- there is no VERSION file and no `-X` ldflag. Bump the constant
+in the commit that prepares a release. Pushing a `v*` tag then publishes one,
+and the workflow checks the tag against what the built binary prints rather
+than against the source, so the constant, the build and `ghu version` are all
+covered at once.
+
+`cli.Version()` prefers the module version from `debug.ReadBuildInfo()` where
+there is one, so `go install ...@latest` reports the tag it resolved instead of
+the constant -- that path used to report `dev`. `make release` passes
+`-buildvcs=false`, so release binaries have no module version and report the
+constant, which is what keeps them reproducible. `make build` does not, so a
+checkout build reports a VCS pseudo-version: that is deliberate, and it is how
+you tell a dev binary from a released one.
 
 ## Committing
 

@@ -3,8 +3,6 @@ MODULE  := github.com/semirm-dev/ghu
 BUILD   := .build
 BIN     := bin
 PLATFORMS := darwin/amd64 darwin/arm64 linux/amd64 linux/arm64 windows/amd64
-VERSION := $(shell cat VERSION)
-LDFLAGS := -ldflags "-X $(MODULE)/internal/cli.Version=$(VERSION)"
 COVERFILE := coverprofile
 
 .PHONY: help build install test test-cover lint order release tidy clean
@@ -24,10 +22,10 @@ help: ## Show available targets
 
 build: ## Build the ghu binary
 	@mkdir -p $(BUILD)
-	go build $(LDFLAGS) -o $(BUILD)/$(BINARY) ./cmd/ghu
+	go build -o $(BUILD)/$(BINARY) ./cmd/ghu
 
 install: ## Install ghu into GOBIN
-	go install $(LDFLAGS) ./cmd/ghu
+	go install ./cmd/ghu
 
 test: ## Run tests with race detection
 	@test -n "$$(find . -name '*_test.go' -not -path './.git/*' -print -quit)" \
@@ -53,7 +51,7 @@ release: ## Cross-compile release binaries into bin/
 		out=$(BIN)/$(BINARY)-$$os-$$arch$$ext; \
 		echo "  $$out"; \
 		CGO_ENABLED=0 GOOS=$$os GOARCH=$$arch \
-			go build -trimpath -buildvcs=false -ldflags "-s -w -X $(MODULE)/internal/cli.Version=$(VERSION)" \
+			go build -trimpath -buildvcs=false -ldflags "-s -w" \
 			-o $$out ./cmd/ghu; \
 	done
 	@cd $(BIN) && sha256sum * > SHA256SUMS && echo "  $(BIN)/SHA256SUMS"

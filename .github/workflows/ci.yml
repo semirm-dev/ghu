@@ -22,7 +22,8 @@ jobs:
 
       # bin/ is committed and the README sends people straight to it, so a
       # stale binary there is what everyone downloads. The build is
-      # reproducible (-trimpath, -buildvcs=false, version from VERSION) and
+      # reproducible (-trimpath, -buildvcs=false, and a version constant
+      # rather than anything the build discovers) and
       # setup-go pins the toolchain from go.mod, so a rebuild must come out
       # byte-identical. This doubles as the only check that the platforms
       # nothing here runs still compile.

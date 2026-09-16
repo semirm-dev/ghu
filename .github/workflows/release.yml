@@ -21,22 +21,23 @@ jobs:
         with:
           go-version-file: go.mod
 
-      # The version lives in VERSION and reaches the binary as an ldflag. A tag
-      # that disagrees would publish binaries whose `ghu version` is a lie.
-      - name: Tag matches VERSION
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: |
-          test "$(cat VERSION)" = "${GITHUB_REF_NAME#v}" \
-            || { echo "tag ${GITHUB_REF_NAME} does not match VERSION $(cat VERSION)"; exit 1; }
-
       - run: make lint
       - run: make test
       - run: make release
 
-      # The stamp is the part a cross-compile can silently get wrong.
-      - name: Check the native binary runs and is stamped
+      # The version is the `version` constant in internal/cli/version.go.
+      # Checking the tag against what the built binary prints, rather than
+      # against the source, covers the constant, the build and `ghu version`
+      # in one step -- a mismatch would publish binaries whose version is a lie.
+      - name: Tag matches the built version
+        if: startsWith(github.ref, 'refs/tags/v')
         run: |
-          test "$(./bin/ghu-linux-amd64 version)" = "$(cat VERSION)"
+          built="$(./bin/ghu-linux-amd64 version)"
+          test "$built" = "${GITHUB_REF_NAME#v}" \
+            || { echo "tag ${GITHUB_REF_NAME}, but the binary reports $built"; exit 1; }
+
+      # A dispatch run has no tag to check against, so just prove it runs.
+      - run: ./bin/ghu-linux-amd64 version
 
       - uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/v')

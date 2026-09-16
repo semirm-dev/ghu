@@ -15,7 +15,7 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	if err := fang.Execute(ctx, cli.NewRootCmd(), fang.WithVersion(cli.Version)); err != nil {
+	if err := fang.Execute(ctx, cli.NewRootCmd(), fang.WithVersion(cli.Version())); err != nil {
 		os.Exit(1)
 	}
 }

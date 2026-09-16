@@ -1,5 +1,9 @@
 # Binaries for programs and plugins
 *.exe
+# ...except the released Windows binary, which bin/ publishes like the
+# rest. The blanket *.exe above had been quietly keeping it out, so the
+# README's Windows row pointed at a file that was not in the repository.
+!bin/*.exe
 *.exe~
 *.dll
 *.so
