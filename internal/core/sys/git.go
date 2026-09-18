@@ -21,7 +21,7 @@ type Scope struct {
 }
 
 type Git struct {
-	run *Runner
+	runner *Runner
 }
 
 type KeyValue struct {
@@ -41,16 +41,20 @@ func Local() Scope { return Scope{flag: "--local"} }
 
 func File(path string) Scope { return Scope{flag: "--file", file: path} }
 
-func NewGit(r *Runner) *Git { return &Git{run: r} }
+func NewGit(r *Runner) *Git { return &Git{runner: r} }
 
 // DryRun reports whether this Git suppresses its writes.
-func (c *Git) DryRun() bool { return c.run.DryRun() }
+func (git *Git) DryRun() bool { return git.runner.DryRun() }
 
-func (c *Git) Set(ctx context.Context, s Scope, key, value string) error {
+// Set replaces every value for a key with one. Plain `git config key value`
+// errors if the key already holds more than one value; --replace-all is what
+// keeps a repeated Set idempotent no matter how many values a prior write
+// left behind.
+func (git *Git) Set(ctx context.Context, s Scope, key, value string) error {
 	args := append([]string{"config"}, s.args()...)
 	args = append(args, "--replace-all", key, value)
 
-	out, err := c.run.Run(ctx, "git", args...)
+	out, err := git.runner.Run(ctx, "git", args...)
 	if err != nil {
 		return fmt.Errorf("git config %s: %w: %s", key, err, strings.TrimSpace(out))
 	}
@@ -59,11 +63,11 @@ func (c *Git) Set(ctx context.Context, s Scope, key, value string) error {
 
 // Unset removes every value for a key. A key that is already absent is not an
 // error, so callers can unset unconditionally.
-func (c *Git) Unset(ctx context.Context, s Scope, key string) error {
+func (git *Git) Unset(ctx context.Context, s Scope, key string) error {
 	args := append([]string{"config"}, s.args()...)
 	args = append(args, "--unset-all", key)
 
-	out, err := c.run.Run(ctx, "git", args...)
+	out, err := git.runner.Run(ctx, "git", args...)
 	if err != nil {
 		// Exit code 5 means the key was not there to begin with.
 		if code(err) == 5 {
@@ -76,11 +80,11 @@ func (c *Git) Unset(ctx context.Context, s Scope, key string) error {
 
 // Get reads a single value. git exits 1 when the key is not set, which becomes
 // ErrNotFound.
-func (c *Git) Get(ctx context.Context, s Scope, key string) (string, error) {
+func (git *Git) Get(ctx context.Context, s Scope, key string) (string, error) {
 	args := append([]string{"config"}, s.args()...)
 	args = append(args, "--get", key)
 
-	out, err := c.run.Query(ctx, "git", args...)
+	out, err := git.runner.Query(ctx, "git", args...)
 	if err != nil {
 		if code(err) == 1 {
 			return "", ErrNotFound
@@ -91,11 +95,11 @@ func (c *Git) Get(ctx context.Context, s Scope, key string) (string, error) {
 }
 
 // GetRegexp lists every key matching a pattern, in file order.
-func (c *Git) GetRegexp(ctx context.Context, s Scope, pattern string) ([]KeyValue, error) {
+func (git *Git) GetRegexp(ctx context.Context, s Scope, pattern string) ([]KeyValue, error) {
 	args := append([]string{"config"}, s.args()...)
 	args = append(args, "--get-regexp", pattern)
 
-	out, err := c.run.Query(ctx, "git", args...)
+	out, err := git.runner.Query(ctx, "git", args...)
 	if err != nil {
 		// Exit code 1 means nothing matched, which is an empty result.
 		if code(err) == 1 {
@@ -119,8 +123,8 @@ func (c *Git) GetRegexp(ctx context.Context, s Scope, pattern string) ([]KeyValu
 // directory, and reports which file supplied the winning value. That is what
 // makes `ghu profile show` report what git resolves rather than what ghu's config
 // claims.
-func (c *Git) ShowOrigin(ctx context.Context, key string) (Origin, error) {
-	out, err := c.run.Query(ctx, "git", "config", "--show-origin", "--get", key)
+func (git *Git) ShowOrigin(ctx context.Context, key string) (Origin, error) {
+	out, err := git.runner.Query(ctx, "git", "config", "--show-origin", "--get", key)
 	if err != nil {
 		if code(err) == 1 {
 			return Origin{Key: key}, ErrNotFound
@@ -140,8 +144,8 @@ func (c *Git) ShowOrigin(ctx context.Context, key string) (Origin, error) {
 	}, nil
 }
 
-func (c *Git) InRepo(ctx context.Context) bool {
-	out, err := c.run.Query(ctx, "git", "rev-parse", "--is-inside-work-tree")
+func (git *Git) InRepo(ctx context.Context) bool {
+	out, err := git.runner.Query(ctx, "git", "rev-parse", "--is-inside-work-tree")
 	return err == nil && strings.TrimSpace(out) == "true"
 }
 

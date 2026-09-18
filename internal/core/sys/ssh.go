@@ -84,19 +84,19 @@ func CheckKey(path string) []KeyProblem {
 }
 
 // DryRun reports whether this SSH suppresses its writes.
-func (c *SSH) DryRun() bool { return c.run.DryRun() }
+func (ssh *SSH) DryRun() bool { return ssh.run.DryRun() }
 
 // Generate creates an ed25519 keypair. It refuses to overwrite an existing key
 // unless Force is set: a lost private key means losing access to every host
 // that trusts it.
-func (c *SSH) Generate(ctx context.Context, opts GenerateOpts) (GenerateResult, error) {
+func (ssh *SSH) Generate(ctx context.Context, opts GenerateOpts) (GenerateResult, error) {
 	var result GenerateResult
 
 	// Generate changes the filesystem directly as well as through the runner:
 	// it deletes the old key before ssh-keygen replaces it. Under a dry run the
 	// runner would swallow the replacement, so skipping the deletion here is
 	// what stops --force --dry-run from destroying a key it never rewrites.
-	dry := c.DryRun()
+	dry := ssh.DryRun()
 
 	if _, err := os.Stat(opts.Path); err == nil {
 		if !opts.Force {
@@ -120,7 +120,7 @@ func (c *SSH) Generate(ctx context.Context, opts GenerateOpts) (GenerateResult, 
 		}
 	}
 
-	out, err := c.run.Run(ctx, "ssh-keygen",
+	out, err := ssh.run.Run(ctx, "ssh-keygen",
 		"-t", "ed25519",
 		"-f", opts.Path,
 		"-C", opts.Comment,
@@ -136,8 +136,8 @@ func (c *SSH) Generate(ctx context.Context, opts GenerateOpts) (GenerateResult, 
 // account answers -- the only check that proves a key belongs to the account a
 // profile claims. GitHub always closes the session with exit status 1, so the
 // exit code is deliberately ignored and only the greeting is read.
-func (c *SSH) Probe(ctx context.Context, keyPath string) (string, error) {
-	out, _ := c.run.Query(ctx, "ssh",
+func (ssh *SSH) Probe(ctx context.Context, keyPath string) (string, error) {
+	out, _ := ssh.run.Query(ctx, "ssh",
 		"-i", keyPath,
 		"-o", "IdentitiesOnly=yes",
 		"-o", "StrictHostKeyChecking=accept-new",
