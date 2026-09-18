@@ -33,8 +33,8 @@ type Runner struct {
 	dryRun  bool
 }
 
-// call formats a name and args as the --verbose/--dry-run echo line, quoting
-// arguments that need it. It plays no part in running the command.
+// call is one subprocess invocation: a name and args to run, and, via
+// String, the quoted form the --verbose/--dry-run echo line prints.
 type call struct {
 	name string
 	args []string
@@ -64,16 +64,17 @@ func (r *Runner) Run(ctx context.Context, name string, args ...string) (string, 
 	if r.verbose {
 		r.print("+ %s\n", c)
 	}
-	return run(ctx, name, args...)
+	return run(ctx, c)
 }
 
 // Query executes a command that only reads. It runs even under DryRun: a dry
 // run that could not read the current state would have nothing to report.
 func (r *Runner) Query(ctx context.Context, name string, args ...string) (string, error) {
+	c := call{name: name, args: args}
 	if r.verbose {
-		r.print("+ %s\n", call{name: name, args: args})
+		r.print("+ %s\n", c)
 	}
-	return run(ctx, name, args...)
+	return run(ctx, c)
 }
 
 func (c call) String() string {
@@ -95,8 +96,8 @@ func (r *Runner) print(format string, c call) {
 	fmt.Fprintf(r.out, format, c)
 }
 
-func run(ctx context.Context, name string, args ...string) (string, error) {
-	cmd := osexec.CommandContext(ctx, name, args...)
+func run(ctx context.Context, c call) (string, error) {
+	cmd := osexec.CommandContext(ctx, c.name, c.args...)
 	out, err := cmd.CombinedOutput()
 	return string(out), err
 }
