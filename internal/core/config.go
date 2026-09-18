@@ -32,6 +32,11 @@ var Template []byte
 // empty profile list.
 var ErrVersion = errors.New("config version is not supported")
 
+type Config struct {
+	Version  int       `yaml:"version"`
+	Profiles []Profile `yaml:"profiles"`
+}
+
 // Load reads the config file. A missing or empty file yields an empty config,
 // so first run needs no special casing.
 func LoadConfig(path string) (Config, error) {

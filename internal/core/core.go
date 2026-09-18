@@ -65,11 +65,6 @@ type Profile struct {
 	Sign bool   `yaml:"sign"`
 }
 
-type Config struct {
-	Version  int       `yaml:"version"`
-	Profiles []Profile `yaml:"profiles"`
-}
-
 // Resolving which profile governs a directory, and reporting the set as rows.
 //
 // Nothing here keeps state, so nothing here is a method: these are functions of
@@ -127,6 +122,10 @@ func (p Profile) ClaimsLogin() bool { return strings.TrimSpace(p.Login) != "" }
 // ~/.ssh, which is how you would say it out loud.
 func (p Profile) KeyPath() string { return NormalizeKey(p.Key) }
 
+// Validate rejects a name that isn't safe to use as-is: Layout.ProfileFile
+// joins it straight into a path with no sanitizing, so a name outside
+// namePattern could put path separators or a leading dot into a file ghu
+// writes under ~/.ghu/profiles/.
 func (p Profile) Validate() error {
 	if !namePattern.MatchString(p.Name) {
 		return fmt.Errorf("profile name %q must match %s", p.Name, namePattern)
