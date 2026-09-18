@@ -25,7 +25,7 @@ import (
 func TestProfileLifecycle(t *testing.T) {
 	s, layout := newSet(t)
 	ctx := context.Background()
-	git := sys.NewGit(sys.NewRunner(sys.Opts{}))
+	git := sys.NewGit(sys.NewRunner(nil, false, false))
 
 	if _, err := s.Init(ctx); err != nil {
 		t.Fatalf("Init: %v", err)
@@ -168,7 +168,7 @@ func TestAddDryRunTouchesNothing(t *testing.T) {
 	t.Setenv("GIT_CONFIG_SYSTEM", os.DevNull)
 
 	layout := core.LayoutAt(home)
-	git := sys.NewGit(sys.NewRunner(sys.Opts{DryRun: true}))
+	git := sys.NewGit(sys.NewRunner(nil, false, true))
 
 	s, err := profile.Open(layout, git)
 	if err != nil {
@@ -199,7 +199,7 @@ func newSet(t *testing.T) (*profile.Set, core.Layout) {
 	t.Setenv("GIT_CONFIG_SYSTEM", os.DevNull)
 
 	layout := core.LayoutAt(home)
-	git := sys.NewGit(sys.NewRunner(sys.Opts{}))
+	git := sys.NewGit(sys.NewRunner(nil, false, false))
 
 	s, err := profile.Open(layout, git)
 	if err != nil {

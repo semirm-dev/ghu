@@ -30,11 +30,7 @@ func resolve(e *command.Env) error {
 	// --dry-run and --verbose are the runner's configuration, not a choice
 	// between runners, so there is nothing to branch on here. The runner is the
 	// only place the dry run is recorded; Git and SSH read it back from there.
-	runner := sys.NewRunner(sys.Opts{
-		Out:     runnerOut(e),
-		Verbose: e.Verbose,
-		DryRun:  e.DryRun,
-	})
+	runner := sys.NewRunner(runnerOut(e), e.Verbose, e.DryRun)
 	e.Git = sys.NewGit(runner)
 	e.SSH = sys.NewSSH(runner)
 

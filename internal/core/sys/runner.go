@@ -32,19 +32,6 @@ type Call struct {
 	Args []string
 }
 
-// Opts configures a Runner. The zero value runs commands silently.
-type Opts struct {
-	// Out receives the --verbose echo and the --dry-run listing. A nil Out
-	// prints nothing.
-	Out io.Writer
-
-	// Verbose echoes every command as it runs.
-	Verbose bool
-
-	// DryRun prints mutating commands instead of executing them.
-	DryRun bool
-}
-
 // Runner executes subprocesses.
 type Runner struct {
 	out     io.Writer
@@ -52,8 +39,10 @@ type Runner struct {
 	dryRun  bool
 }
 
-func NewRunner(opts Opts) *Runner {
-	return &Runner{out: opts.Out, verbose: opts.Verbose, dryRun: opts.DryRun}
+// NewRunner builds a Runner. out receives the --verbose echo and the
+// --dry-run listing; a nil out prints nothing.
+func NewRunner(out io.Writer, verbose, dryRun bool) *Runner {
+	return &Runner{out: out, verbose: verbose, dryRun: dryRun}
 }
 
 func (c Call) String() string {
