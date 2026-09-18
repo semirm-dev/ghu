@@ -26,12 +26,6 @@ import (
 	"strings"
 )
 
-// Call is one subprocess invocation.
-type Call struct {
-	Name string
-	Args []string
-}
-
 // Runner executes subprocesses.
 type Runner struct {
 	out     io.Writer
@@ -39,22 +33,17 @@ type Runner struct {
 	dryRun  bool
 }
 
+// call formats a name and args as the --verbose/--dry-run echo line, quoting
+// arguments that need it. It plays no part in running the command.
+type call struct {
+	name string
+	args []string
+}
+
 // NewRunner builds a Runner. out receives the --verbose echo and the
 // --dry-run listing; a nil out prints nothing.
 func NewRunner(out io.Writer, verbose, dryRun bool) *Runner {
 	return &Runner{out: out, verbose: verbose, dryRun: dryRun}
-}
-
-func (c Call) String() string {
-	parts := make([]string, 0, len(c.Args)+1)
-	parts = append(parts, c.Name)
-	for _, a := range c.Args {
-		if strings.ContainsAny(a, " \t\"'") {
-			a = fmt.Sprintf("%q", a)
-		}
-		parts = append(parts, a)
-	}
-	return strings.Join(parts, " ")
 }
 
 // DryRun reports whether mutating commands are suppressed. Callers that also
@@ -66,14 +55,14 @@ func (r *Runner) DryRun() bool { return r.dryRun }
 // command and reports success without running it, so callers need no
 // conditional of their own.
 func (r *Runner) Run(ctx context.Context, name string, args ...string) (string, error) {
-	call := Call{Name: name, Args: args}
+	c := call{name: name, args: args}
 
 	if r.dryRun {
-		r.print("would run: %s\n", call)
+		r.print("would run: %s\n", c)
 		return "", nil
 	}
 	if r.verbose {
-		r.print("+ %s\n", call)
+		r.print("+ %s\n", c)
 	}
 	return run(ctx, name, args...)
 }
@@ -82,16 +71,28 @@ func (r *Runner) Run(ctx context.Context, name string, args ...string) (string, 
 // run that could not read the current state would have nothing to report.
 func (r *Runner) Query(ctx context.Context, name string, args ...string) (string, error) {
 	if r.verbose {
-		r.print("+ %s\n", Call{Name: name, Args: args})
+		r.print("+ %s\n", call{name: name, args: args})
 	}
 	return run(ctx, name, args...)
 }
 
-func (r *Runner) print(format string, call Call) {
+func (c call) String() string {
+	parts := make([]string, 0, len(c.args)+1)
+	parts = append(parts, c.name)
+	for _, a := range c.args {
+		if strings.ContainsAny(a, " \t\"'") {
+			a = fmt.Sprintf("%q", a)
+		}
+		parts = append(parts, a)
+	}
+	return strings.Join(parts, " ")
+}
+
+func (r *Runner) print(format string, c call) {
 	if r.out == nil {
 		return
 	}
-	fmt.Fprintf(r.out, format, call)
+	fmt.Fprintf(r.out, format, c)
 }
 
 func run(ctx context.Context, name string, args ...string) (string, error) {
