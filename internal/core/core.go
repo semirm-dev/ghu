@@ -163,47 +163,6 @@ func (p Profile) Validate() error {
 	return nil
 }
 
-// Duplicate names would collide on disk; duplicate directories would make
-// matching ambiguous.
-func (c Config) Validate() error {
-	seenName := map[string]bool{}
-	seenDir := map[string]bool{}
-	for _, p := range c.Profiles {
-		if err := p.Validate(); err != nil {
-			return err
-		}
-		if seenName[p.Name] {
-			return fmt.Errorf("duplicate profile name %q", p.Name)
-		}
-		seenName[p.Name] = true
-
-		dir := path.Clean(p.Dir)
-		if seenDir[dir] {
-			return fmt.Errorf("duplicate profile directory %q", p.Dir)
-		}
-		seenDir[dir] = true
-	}
-	return nil
-}
-
-func (c Config) Find(name string) (Profile, bool) {
-	for _, p := range c.Profiles {
-		if strings.EqualFold(p.Name, name) {
-			return p, true
-		}
-	}
-	return Profile{}, false
-}
-
-// Names lists profile names in declaration order.
-func (c Config) Names() []string {
-	names := make([]string, 0, len(c.Profiles))
-	for _, p := range c.Profiles {
-		names = append(names, p.Name)
-	}
-	return names
-}
-
 // keySlash normalises both separators to /, whatever the host uses.
 func keySlash(p string) string { return strings.ReplaceAll(slash(p), `\`, "/") }
 

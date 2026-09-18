@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 	"strings"
 	"time"
 
@@ -103,4 +104,45 @@ func EnsureConfigFile(path string) error {
 		return nil
 	}
 	return sys.WriteAtomic(path, Template, 0o600)
+}
+
+// Duplicate names would collide on disk; duplicate directories would make
+// matching ambiguous.
+func (cfg Config) Validate() error {
+	seenName := map[string]bool{}
+	seenDir := map[string]bool{}
+	for _, p := range cfg.Profiles {
+		if err := p.Validate(); err != nil {
+			return err
+		}
+		if seenName[p.Name] {
+			return fmt.Errorf("duplicate profile name %q", p.Name)
+		}
+		seenName[p.Name] = true
+
+		dir := path.Clean(p.Dir)
+		if seenDir[dir] {
+			return fmt.Errorf("duplicate profile directory %q", p.Dir)
+		}
+		seenDir[dir] = true
+	}
+	return nil
+}
+
+func (cfg Config) Find(name string) (Profile, bool) {
+	for _, p := range cfg.Profiles {
+		if strings.EqualFold(p.Name, name) {
+			return p, true
+		}
+	}
+	return Profile{}, false
+}
+
+// Names lists profile names in declaration order.
+func (cfg Config) Names() []string {
+	names := make([]string, 0, len(cfg.Profiles))
+	for _, p := range cfg.Profiles {
+		names = append(names, p.Name)
+	}
+	return names
 }
