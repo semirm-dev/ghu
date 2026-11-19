@@ -3,7 +3,6 @@
 [![CI](https://github.com/semirm-dev/ghu/actions/workflows/ci.yml/badge.svg)](https://github.com/semirm-dev/ghu/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/semirm-dev/ghu)](https://github.com/semirm-dev/ghu/releases/latest)
 [![Go Version](https://img.shields.io/github/go-mod/go-version/semirm-dev/ghu)](go.mod)
-[![Go Report Card](https://goreportcard.com/badge/github.com/semirm-dev/ghu)](https://goreportcard.com/report/github.com/semirm-dev/ghu)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Use a different GitHub account in each folder, without switching.
