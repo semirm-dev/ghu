@@ -1,5 +1,11 @@
 # ghu
 
+[![CI](https://github.com/semirm-dev/ghu/actions/workflows/ci.yml/badge.svg)](https://github.com/semirm-dev/ghu/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/semirm-dev/ghu)](https://github.com/semirm-dev/ghu/releases/latest)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/semirm-dev/ghu)](go.mod)
+[![Go Report Card](https://goreportcard.com/badge/github.com/semirm-dev/ghu)](https://goreportcard.com/report/github.com/semirm-dev/ghu)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 Use a different GitHub account in each folder, without switching.
 
 Working under more than one GitHub account means keeping three things in sync per
@@ -428,3 +434,7 @@ Pushing the tag runs [`release.yml`](.github/workflows/release.yml): it
 cross-compiles all five platforms on one Linux runner, verifies the stamp
 landed, writes `SHA256SUMS`, and publishes them as a
 [release](https://github.com/semirm-dev/ghu/releases).
+
+## License
+
+[MIT](LICENSE)
